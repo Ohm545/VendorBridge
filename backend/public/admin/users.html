@@ -149,14 +149,15 @@ fetch('/admin/sidebar.html').then(r=>r.text()).then(h=>{
 
 let currentPage = 1;
 let debounceTimer;
-function debouncedLoad() { clearTimeout(debounceTimer); debounceTimer = setTimeout(() => loadUsers(1), 350); }
+function debouncedLoad() { clearTimeout(debounceTimer); debounceTimer = setTimeout(function() { loadUsers(1); }, 350); }
 
-async function loadUsers(page = 1) {
+function loadUsers(page) {
+  if (!page) page = 1;
   currentPage = page;
   const search   = document.getElementById('searchInput').value.trim();
   const role     = document.getElementById('roleFilter').value;
   const status   = document.getElementById('statusFilter').value;
-  const params   = new URLSearchParams({ page, limit: 15 });
+  const params   = new URLSearchParams({ page: page, limit: 15 });
   if (search) params.set('search', search);
   if (role)   params.set('role', role);
   if (status) params.set('status', status);
@@ -164,12 +165,13 @@ async function loadUsers(page = 1) {
   document.getElementById('usersBody').innerHTML =
     '<tr><td colspan="7"><div class="empty-state"><div class="skeleton" style="height:16px;width:200px;margin:0 auto"></div></div></td></tr>';
 
-  try {
-    const d = await apiGet('/users?' + params.toString());
-    if (!d.success) { showToast('Failed to load users', 'error'); return; }
-    renderUsers(d.data.users);
-    renderPagination('usersPagination', d.data.pagination, loadUsers);
-  } catch(e) { showToast('Error loading users', 'error'); }
+  apiGet('/users?' + params.toString())
+    .then(function(d) {
+      if (!d.success) { showToast('Failed to load users', 'error'); return; }
+      renderUsers(d.data.users);
+      renderPagination('usersPagination', d.data.pagination, loadUsers);
+    })
+    .catch(function(e) { showToast('Error loading users', 'error'); });
 }
 
 function renderUsers(users) {
@@ -220,20 +222,22 @@ async function createUser() {
   }
 
   setLoading(btn, true);
-  try {
-    const d = await apiPost('/users', { full_name:name, company_name:company, email, role });
-    if (!d.success) {
-      document.getElementById('createAlertMsg').textContent = d.message || 'Failed to create user.';
-      alertEl.classList.add('show');
-    } else {
-      closeModal('createUserModal');
-      showToast('User created successfully!', 'success');
-      document.getElementById('cu_name').value=''; document.getElementById('cu_company').value='';
-      document.getElementById('cu_email').value=''; document.getElementById('cu_role').value='';
-      loadUsers(1);
-    }
-  } catch(e) { showToast('Network error', 'error'); }
-  setLoading(btn, false);
+  apiPost('/users', { full_name:name, company_name:company, email, role })
+    .then(function(d) {
+      if (!d.success) {
+        document.getElementById('createAlertMsg').textContent = d.message || 'Failed to create user.';
+        alertEl.classList.add('show');
+        setLoading(btn, false);
+      } else {
+        closeModal('createUserModal');
+        showToast('User created successfully!', 'success');
+        document.getElementById('cu_name').value=''; document.getElementById('cu_company').value='';
+        document.getElementById('cu_email').value=''; document.getElementById('cu_role').value='';
+        setLoading(btn, false);
+        loadUsers(1);
+      }
+    })
+    .catch(function(e) { showToast('Network error', 'error'); setLoading(btn, false); });
 }
 
 function openEditUser(u) {
@@ -246,7 +250,7 @@ function openEditUser(u) {
   openModal('editUserModal');
 }
 
-async function saveUser() {
+function saveUser() {
   const btn = document.getElementById('editUserBtn');
   const id = document.getElementById('eu_id').value;
   const full_name = document.getElementById('eu_name').value.trim();
@@ -254,40 +258,52 @@ async function saveUser() {
   const role = document.getElementById('eu_role').value;
   const status = document.getElementById('eu_status').value;
   setLoading(btn, true);
-  try {
-    const [r1, r2] = await Promise.all([
-      apiPut('/users/' + id, { full_name, company_name }),
-      apiPatch('/users/' + id + '/role', { role }),
-    ]);
-    await apiPatch('/users/' + id + '/status', { status });
+  
+  Promise.all([
+    apiPut('/users/' + id, { full_name: full_name, company_name: company_name }),
+    apiPatch('/users/' + id + '/role', { role: role }),
+  ]).then(function() {
+    return apiPatch('/users/' + id + '/status', { status: status });
+  }).then(function() {
     closeModal('editUserModal');
     showToast('User updated!', 'success');
+    setLoading(btn, false);
     loadUsers(currentPage);
-  } catch(e) { showToast('Failed to update user', 'error'); }
-  setLoading(btn, false);
+  }).catch(function(e) { 
+    showToast('Failed to update user', 'error'); 
+    setLoading(btn, false);
+  });
 }
 
-async function toggleUserStatus(id, newStatus, name) {
-  const ok = await showConfirm({ title: newStatus==='inactive'?'Deactivate User':'Activate User',
-    message: `Are you sure you want to ${newStatus==='inactive'?'deactivate':'activate'} <strong>${name}</strong>?`,
-    confirmText: newStatus==='inactive'?'Deactivate':'Activate',
-    type: newStatus==='inactive'?'danger':'success' });
-  if (!ok) return;
-  try {
-    const d = await apiPatch('/users/' + id + '/status', { status: newStatus });
-    if (d.success) { showToast(`User ${newStatus}!`, 'success'); loadUsers(currentPage); }
-    else showToast(d.message || 'Failed', 'error');
-  } catch(e) { showToast('Error', 'error'); }
+function toggleUserStatus(id, newStatus, name) {
+  var title = newStatus === 'inactive' ? 'Deactivate User' : 'Activate User';
+  var msg = 'Are you sure you want to ' + (newStatus === 'inactive' ? 'deactivate' : 'activate') + ' <strong>' + name + '</strong>?';
+  var confirmText = newStatus === 'inactive' ? 'Deactivate' : 'Activate';
+  var type = newStatus === 'inactive' ? 'danger' : 'success';
+  
+  showConfirm({ title: title, message: msg, confirmText: confirmText, type: type })
+    .then(function(ok) {
+      if (!ok) return;
+      apiPatch('/users/' + id + '/status', { status: newStatus })
+        .then(function(d) {
+          if (d.success) { showToast('User ' + newStatus + '!', 'success'); loadUsers(currentPage); }
+          else showToast(d.message || 'Failed', 'error');
+        })
+        .catch(function(e) { showToast('Error', 'error'); });
+    });
 }
 
-async function resetUserPw(id, name) {
-  const ok = await showConfirm({ title:'Reset Password', message:`Send a new temporary password to <strong>${name}</strong>?`, confirmText:'Reset & Send', type:'warning' });
-  if (!ok) return;
-  try {
-    const d = await apiPost('/users/' + id + '/reset-password', {});
-    if (d.success) showToast('Password reset and emailed!', 'success');
-    else showToast(d.message || 'Failed', 'error');
-  } catch(e) { showToast('Error', 'error'); }
+function resetUserPw(id, name) {
+  showConfirm({ title: 'Reset Password', message: 'Send a new temporary password to <strong>' + name + '</strong>?', confirmText: 'Reset & Send', type: 'warning' })
+    .then(function(ok) {
+      if (!ok) return;
+      apiPost('/users/' + id + '/reset-password', {})
+        .then(function(d) {
+          if (d.success) showToast('Password reset and emailed!', 'success');
+          else showToast(d.message || 'Failed', 'error');
+        })
+        .catch(function(e) { showToast('Error', 'error'); });
+    });
 }
 </script>
 </body>
