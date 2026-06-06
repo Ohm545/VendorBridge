@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Analytics — VendorBridge Manager</title>
+<link rel="stylesheet" href="/manager/manager.css"/></head>
+<body>
+<div class="admin-layout">
+  <div id="sidebarMount"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Analytics <span class="topbar-subtitle">Performance insights</span></div>
+      <div class="topbar-actions"><a href="/manager/notifications" class="topbar-btn" style="position:relative"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot" style="display:none"></span></a></div>
+    </header>
+    <main class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Analytics</h1><p>Approval performance, vendor analytics and officer metrics</p></div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('approvals',this)">Approval Analytics</div>
+        <div class="tab" onclick="switchTab('value',this)">Procurement Value</div>
+        <div class="tab" onclick="switchTab('vendors',this)">Vendor Analytics</div>
+        <div class="tab" onclick="switchTab('officers',this)">Officer Analytics</div>
+      </div>
+
+      <!-- Approvals Tab -->
+      <div id="tab-approvals">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px" id="apprKpis">
+          <div class="skeleton" style="height:80px;border-radius:14px"></div>
+          <div class="skeleton" style="height:80px;border-radius:14px"></div>
+          <div class="skeleton" style="height:80px;border-radius:14px"></div>
+          <div class="skeleton" style="height:80px;border-radius:14px"></div>
+        </div>
+        <div class="two-col">
+          <div class="card"><div class="card-header"><div class="card-title">Monthly Approvals vs Rejections</div></div>
+            <div class="card-body"><div class="chart-wrap"><canvas id="apprChart" style="height:200px"></canvas></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">SLA Performance</div></div>
+            <div class="card-body" id="slaBody"></div></div>
+        </div>
+      </div>
+
+      <!-- Value Tab -->
+      <div id="tab-value" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px" id="valueKpis">
+          <div class="skeleton" style="height:80px;border-radius:14px"></div>
+          <div class="skeleton" style="height:80px;border-radius:14px"></div>
+          <div class="skeleton" style="height:80px;border-radius:14px"></div>
+        </div>
+        <div class="two-col">
+          <div class="card"><div class="card-header"><div class="card-title">Monthly Approved Spend</div></div>
+            <div class="card-body"><div class="chart-wrap"><canvas id="spendChart" style="height:200px"></canvas></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Spend by Vendor</div></div>
+            <div class="card-body" id="spendByVendor"></div></div>
+        </div>
+      </div>
+
+      <!-- Vendors Tab -->
+      <div id="tab-vendors" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Vendor Performance Ranking</div></div>
+          <div class="table-wrap" style="border:none;border-radius:0">
+            <table><thead><tr><th>#</th><th>Vendor</th><th>Category</th><th>Assigned</th><th>Quoted</th><th>Times Selected</th><th>Response Rate</th><th>Approval Rate</th></tr></thead>
+            <tbody id="vendorRankBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Officers Tab -->
+      <div id="tab-officers" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Procurement Officer Performance</div></div>
+          <div class="table-wrap" style="border:none;border-radius:0">
+            <table><thead><tr><th>Officer</th><th>RFQs Created</th><th>Approval Requests</th><th>Approved</th><th>Rejected</th><th>Approval Rate</th></tr></thead>
+            <tbody id="officerBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="/manager/manager.js"></script>
+<script>
+fetch('/manager/sidebar.html').then(r=>r.text()).then(h=>{document.getElementById('sidebarMount').innerHTML=h;initManagerPage('analytics');loadApprovalAnalytics();});
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  ['approvals','value','vendors','officers'].forEach(t=>document.getElementById('tab-'+t).style.display=t===name?'block':'none');
+  if(name==='value') loadValueAnalytics();
+  else if(name==='vendors') loadVendorAnalytics();
+  else if(name==='officers') loadOfficerAnalytics();
+}
+
+async function loadApprovalAnalytics(){
+  try{
+    const d=await apiGet('/analytics/approvals');if(!d.success)return;
+    const s=d.data.stats;
+    document.getElementById('apprKpis').innerHTML=`
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Total</span><div class="kpi-icon blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div></div><div class="kpi-value">${s.total||0}</div><div class="kpi-footer">All time</div></div>
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Approval Rate</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div></div><div class="kpi-value">${s.approval_rate||0}%</div><div class="kpi-footer">${s.approved||0} approved</div></div>
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Avg Time</span><div class="kpi-icon teal"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value">${s.avg_hours||0}h</div><div class="kpi-footer">Per approval</div></div>
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Rejected</span><div class="kpi-icon red"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/></svg></div></div><div class="kpi-value">${s.rejected||0}</div><div class="kpi-footer">Rejected requests</div></div>`;
+
+    const trend=d.data.trend;
+    const labels=trend.map(r=>r.label);
+    const approved=trend.map(r=>parseInt(r.approved));
+    const rejected=trend.map(r=>parseInt(r.rejected));
+    drawBarChart('apprChart',labels,[{data:approved,color:'#16a34a'},{data:rejected,color:'#dc2626'}]);
+
+    const sla=d.data.sla;
+    const slaTotal=parseInt(sla.total)||1;
+    const slaPct=Math.round((parseInt(sla.within_48h)/slaTotal)*100);
+    document.getElementById('slaBody').innerHTML=`
+      <div class="stat-row" style="margin-bottom:20px">
+        <div class="stat-item"><div class="stat-num" style="color:var(--green)">${sla.within_48h||0}</div><div class="stat-lbl">Within 48h SLA</div></div>
+        <div class="stat-item"><div class="stat-num" style="color:var(--red)">${sla.breached||0}</div><div class="stat-lbl">SLA Breached</div></div>
+        <div class="stat-item"><div class="stat-num">${slaPct}%</div><div class="stat-lbl">SLA Compliance</div></div>
+      </div>
+      <div class="progress-track" style="margin-bottom:6px"><div class="progress-fill" style="width:${slaPct}%;background:${slaPct>=80?'var(--green)':slaPct>=60?'var(--orange)':'var(--red)'}"></div></div>
+      <div style="font-size:12px;color:var(--muted)">Target: 80% within 48 hours</div>`;
+  }catch(e){console.error(e);}
+}
+
+async function loadValueAnalytics(){
+  try{
+    const d=await apiGet('/analytics/procurement-value');if(!d.success)return;
+    const s=d.data.summary;
+    document.getElementById('valueKpis').innerHTML=`
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Approved Spend</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div></div><div class="kpi-value">${formatCurrency(s.approved_spend)}</div><div class="kpi-footer">Total approved</div></div>
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Pending Review</span><div class="kpi-icon orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value">${formatCurrency(s.pending_spend)}</div><div class="kpi-footer">Awaiting approval</div></div>
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Rejected Value</span><div class="kpi-icon red"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/></svg></div></div><div class="kpi-value">${formatCurrency(s.rejected_spend)}</div><div class="kpi-footer">Total rejected</div></div>`;
+
+    const monthly=d.data.monthly;
+    if(monthly.length){
+      drawBarChart('spendChart',monthly.map(r=>r.label),[{data:monthly.map(r=>parseFloat(r.spend)),color:'#2563eb'}]);
+    }
+    const byVendorEl=document.getElementById('spendByVendor');
+    const vendors=d.data.by_vendor;
+    const maxSpend=Math.max(...vendors.map(v=>parseFloat(v.spend)),1);
+    byVendorEl.innerHTML=vendors.map((v,i)=>`
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+          <span style="font-weight:600;color:var(--ink)">${v.vendor_name}</span>
+          <span style="color:var(--mid)">${formatCurrency(v.spend)}</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${Math.round((v.spend/maxSpend)*100)}%;background:var(--green)"></div></div>
+      </div>`).join('') || '<div class="empty-state" style="padding:20px"><p>No data yet</p></div>';
+  }catch(e){}
+}
+
+async function loadVendorAnalytics(){
+  try{
+    const d=await apiGet('/analytics/vendors');if(!d.success)return;
+    const tbody=document.getElementById('vendorRankBody');
+    if(!d.vendors.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><p>No vendor data</p></div></td></tr>';return;}
+    tbody.innerHTML=d.vendors.map((v,i)=>`<tr>
+      <td style="font-weight:700;color:var(--muted)">#${i+1}</td>
+      <td class="td-name">${v.vendor_name}</td>
+      <td>${v.category?`<span class="badge badge-info">${v.category}</span>`:'—'}</td>
+      <td style="font-weight:600">${v.assigned}</td>
+      <td style="font-weight:600">${v.quoted}</td>
+      <td style="font-weight:700;color:var(--green)">${v.approvals_as_preferred}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="progress-track" style="width:60px"><div class="progress-fill" style="width:${v.response_rate}%"></div></div>
+        <span style="font-size:12px;font-weight:600">${v.response_rate}%</span>
+      </div></td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="progress-track" style="width:60px"><div class="progress-fill" style="width:${v.approval_rate}%;background:var(--green)"></div></div>
+        <span style="font-size:12px;font-weight:600">${v.approval_rate}%</span>
+      </div></td>
+    </tr>`).join('');
+  }catch(e){}
+}
+
+async function loadOfficerAnalytics(){
+  try{
+    const d=await apiGet('/analytics/officers');if(!d.success)return;
+    const tbody=document.getElementById('officerBody');
+    if(!d.officers.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><p>No data</p></div></td></tr>';return;}
+    tbody.innerHTML=d.officers.map(o=>`<tr>
+      <td><div class="td-name">${o.full_name}</div><div class="td-muted">${o.email}</div></td>
+      <td style="font-weight:600">${o.rfqs}</td>
+      <td style="font-weight:600">${o.requests}</td>
+      <td style="font-weight:600;color:var(--green)">${o.approved}</td>
+      <td style="font-weight:600;color:var(--red)">${o.rejected}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="progress-track" style="width:70px"><div class="progress-fill" style="width:${o.approval_rate}%;background:var(--green)"></div></div>
+        <span style="font-size:12px;font-weight:700">${o.approval_rate}%</span>
+      </div></td>
+    </tr>`).join('');
+  }catch(e){}
+}
+</script>
+</body></html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Assigned RFQs — VendorBridge Vendor</title><link rel="stylesheet" href="/vendor/vendor.css"/></head>
+<body><div class="admin-layout"><div id="sidebarMount"></div><div class="main-content">
+<header class="topbar"><button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+<div class="topbar-title">Assigned RFQs <span class="topbar-subtitle">Procurement requests assigned to you</span></div>
+<div class="topbar-actions"><a href="/vendor/notifications" class="topbar-btn" style="position:relative"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot" style="display:none"></span></a></div></header>
+<main class="page-body">
+<div class="page-header"><div class="page-header-left"><h1>Assigned RFQs</h1><p>View and respond to procurement requests assigned to you</p></div></div>
+<div class="card">
+  <div class="card-header"><div class="filters-bar" style="margin:0;flex:1">
+    <div class="search-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" id="searchInput" placeholder="Search RFQs..." oninput="debouncedLoad()"/></div>
+    <select class="filter-select" id="statusFilter" onchange="loadRfqs(1)"><option value="">All Status</option><option value="active">Active</option><option value="quotation_received">Quotation Received</option><option value="pending_approval">Pending Approval</option><option value="approved">Approved</option><option value="po_generated">PO Generated</option></select>
+    <select class="filter-select" id="categoryFilter" onchange="loadRfqs(1)"><option value="">All Categories</option></select>
+  </div></div>
+  <div class="table-wrap"><table><thead><tr><th>RFQ Title</th><th>Category</th><th>Quantity</th><th>Budget</th><th>Deadline</th><th>Assigned</th><th>Quote Status</th><th>RFQ Status</th><th>Actions</th></tr></thead>
+  <tbody id="rfqsBody"><tr><td colspan="9"><div class="empty-state"><p>Loading...</p></div></td></tr></tbody></table></div>
+  <div class="pagination" id="rfqsPagination"></div>
+</div></main></div></div>
+
+<!-- RFQ Detail Modal -->
+<div class="modal-overlay" id="rfqModal"><div class="modal modal-lg">
+  <div class="modal-header"><span class="modal-title" id="rfqModalTitle">RFQ Details</span><button class="modal-close" onclick="closeModal('rfqModal')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="modal-body" id="rfqModalBody">Loading...</div>
+  <div class="modal-footer" id="rfqModalFooter"></div>
+</div></div>
+
+<!-- Submit Quotation Modal -->
+<div class="modal-overlay" id="quoteModal"><div class="modal">
+  <div class="modal-header"><span class="modal-title" id="quoteTitleLabel">Submit Quotation</span><button class="modal-close" onclick="closeModal('quoteModal')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="modal-body">
+    <div class="alert alert-error" id="quoteAlert"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg><span id="quoteAlertMsg"></span></div>
+    <input type="hidden" id="q_rfq_id"/><input type="hidden" id="q_quote_id"/>
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Quoted Amount (₹) *</label><input class="form-input" id="q_amount" type="number" min="0" placeholder="500000"/></div>
+      <div class="form-group"><label class="form-label">Delivery Days *</label><input class="form-input" id="q_days" type="number" min="1" placeholder="15"/></div>
+      <div class="form-group full"><label class="form-label">Remarks</label><textarea class="form-textarea" id="q_remarks" placeholder="Terms, conditions, specifications..."></textarea></div>
+      <div class="form-group full"><label class="form-label">Attachment URL</label><input class="form-input" id="q_attachment" placeholder="https://drive.google.com/..."/><span class="form-hint">Link to quotation document (Google Drive, Dropbox etc.)</span></div>
+    </div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('quoteModal')">Cancel</button><button class="btn btn-success" id="submitQuoteBtn" onclick="submitQuote()"><div class="btn-spinner"></div><span class="btn-label">Submit Quotation</span></button></div>
+</div></div>
+
+<script src="/vendor/vendor.js"></script>
+<script>
+fetch('/vendor/sidebar.html').then(r=>r.text()).then(h=>{document.getElementById('sidebarMount').innerHTML=h;initVendorPage('rfqs');loadCategories();loadRfqs(1);});
+let debounceTimer,currentPage=1;
+function debouncedLoad(){clearTimeout(debounceTimer);debounceTimer=setTimeout(()=>loadRfqs(1),350);}
+async function loadCategories(){try{const d=await apiGet('/rfqs/categories');if(!d.success)return;const sel=document.getElementById('categoryFilter');d.categories.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});}catch(e){}}
+async function loadRfqs(page=1){currentPage=page;const s=document.getElementById('searchInput').value.trim(),st=document.getElementById('statusFilter').value,cat=document.getElementById('categoryFilter').value;const p=new URLSearchParams({page,limit:15});if(s)p.set('search',s);if(st)p.set('status',st);if(cat)p.set('category',cat);
+document.getElementById('rfqsBody').innerHTML='<tr><td colspan="9"><div class="empty-state"><p>Loading...</p></div></td></tr>';
+try{const d=await apiGet('/rfqs?'+p.toString());if(!d.success)return;renderRfqs(d.data.rfqs);renderPagination('rfqsPagination',d.data.pagination,loadRfqs);}catch(e){showToast('Error','error');}}
+const STAGES=['active','quotation_received','pending_approval','approved','po_generated','invoice_generated'];
+function renderRfqs(rfqs){const tbody=document.getElementById('rfqsBody');if(!rfqs.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg><h3>No RFQs assigned</h3><p>You\'ll see RFQs here once assigned</p></div></td></tr>';return;}
+tbody.innerHTML=rfqs.map(r=>`<tr style="${r.is_expired&&!r.quote_id?'background:var(--red-l)':''}">
+  <td><div class="td-name">${r.title}</div></td>
+  <td>${r.product_category?`<span class="badge badge-info">${r.product_category}</span>`:'<span class="td-muted">—</span>'}</td>
+  <td style="font-size:13px">${r.quantity||'—'}</td>
+  <td style="font-size:13px;font-weight:600">${r.expected_budget?formatCurrency(r.expected_budget):'—'}</td>
+  <td style="font-size:13px;font-weight:600;color:${r.is_expired?'var(--red)':new Date(r.deadline)<new Date(Date.now()+3*86400000)?'var(--orange)':'var(--ink)'}">${formatDate(r.deadline)}${r.is_expired?' ⚠️':''}</td>
+  <td class="td-muted">${formatDate(r.assigned_at)}</td>
+  <td>${r.quote_id?statusBadge(r.quote_status||'submitted'):`<span class="badge badge-warning">Not Submitted</span>`}</td>
+  <td>${statusBadge(r.status)}</td>
+  <td><div class="td-actions">
+    <button class="btn btn-primary btn-sm" onclick="viewRfq('${r.id}')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View</button>
+    ${!r.quote_id&&!r.is_expired&&r.status==='active'?`<button class="btn btn-success btn-sm" onclick="openQuoteModal('${r.id}','${r.title}',null,null,null)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Quote</button>`:''}
+    ${r.quote_id&&['submitted','under_review'].includes(r.quote_status)&&!r.is_expired?`<button class="btn btn-outline btn-sm" onclick="openQuoteModal('${r.id}','${r.title}','${r.quote_id}',${r.quoted_amount},${r.delivery_days})">Edit Quote</button>`:''}
+  </div></td>
+</tr>`).join('');}
+async function viewRfq(id){openModal('rfqModal');document.getElementById('rfqModalBody').innerHTML='<div class="skeleton" style="height:200px;border-radius:10px"></div>';document.getElementById('rfqModalFooter').innerHTML='';
+try{const d=await apiGet('/rfqs/'+id);if(!d.success){document.getElementById('rfqModalBody').innerHTML='<p>Failed.</p>';return;}const r=d.rfq,q=d.quotation,po=d.purchase_order,inv=d.invoice;
+document.getElementById('rfqModalTitle').textContent=r.title;
+const stageMap={active:0,quotation_received:1,pending_approval:2,approved:3,po_generated:4,invoice_generated:5};const cur=stageMap[r.status]||0;
+const stageLabels=['RFQ Assigned','Quote Submitted','Under Review','Approved','PO Generated','Invoiced'];
+document.getElementById('rfqModalBody').innerHTML=`
+  <div class="status-tracker">${stageLabels.map((lbl,i)=>`<div class="tracker-step ${i<cur?'done':i===cur?'active':''}"><div class="tracker-step-circle">${i<cur?'✓':i+1}</div><div class="tracker-step-label">${lbl}</div></div>`).join('')}</div>
+  <div class="form-grid" style="margin-top:16px">
+    <div><label class="form-label">Status</label><div style="padding:6px 0">${statusBadge(r.status)}</div></div>
+    <div><label class="form-label">Budget</label><div style="font-size:14px;font-weight:700">${r.expected_budget?formatCurrency(r.expected_budget):'—'}</div></div>
+    <div><label class="form-label">Deadline</label><div style="font-size:14px;font-weight:700;color:${new Date(r.deadline)<new Date()?'var(--red)':'var(--ink)'}">${formatDate(r.deadline)}</div></div>
+    <div><label class="form-label">Quantity</label><div style="font-size:14px">${r.quantity||'—'}</div></div>
+    <div class="full"><label class="form-label">Location</label><div style="font-size:13px;color:var(--mid)">${r.delivery_location||'—'}</div></div>
+    ${r.description?`<div class="full"><label class="form-label">Description</label><div style="font-size:13px;color:var(--mid);padding:10px;background:var(--surface-2);border-radius:8px">${r.description}</div></div>`:''}
+  </div>
+  ${q?`<div style="margin-top:16px;padding:14px;background:var(--vendor-l);border-radius:10px;border:1px solid #a5f3fc">
+    <div style="font-size:12px;font-weight:700;color:var(--vendor);margin-bottom:8px">YOUR QUOTATION</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:18px;font-weight:800;color:var(--ink)">${formatCurrency(q.quoted_amount||q.amount)}</div><div style="font-size:11px;color:var(--mid)">Quoted Amount</div></div>
+      <div><div style="font-size:18px;font-weight:800;color:var(--ink)">${q.delivery_days} days</div><div style="font-size:11px;color:var(--mid)">Delivery</div></div>
+      <div><div style="padding:4px 0">${statusBadge(q.status)}</div><div style="font-size:11px;color:var(--mid)">Status</div></div>
+    </div>
+    ${q.remarks?`<div style="font-size:13px;color:var(--mid);margin-top:8px">Remarks: ${q.remarks}</div>`:''}
+  </div>`:''}
+  ${po?`<div style="margin-top:16px;padding:14px;background:var(--green-l);border-radius:10px;border:1px solid #bbf7d0"><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px">PURCHASE ORDER</div><div style="display:flex;gap:24px;flex-wrap:wrap"><div><div style="font-size:16px;font-weight:800;color:var(--ink)">${po.po_number}</div><div style="font-size:11px;color:var(--mid)">PO Number</div></div><div><div style="font-size:16px;font-weight:800;color:var(--ink)">${formatCurrency(po.amount)}</div><div style="font-size:11px;color:var(--mid)">Amount</div></div>${statusBadge(po.status)}</div></div>`:''}`;
+if(!q&&r.status==='active'&&new Date(r.deadline)>new Date()){document.getElementById('rfqModalFooter').innerHTML=`<button class="btn btn-outline" onclick="closeModal('rfqModal')">Close</button><button class="btn btn-success" onclick="closeModal('rfqModal');openQuoteModal('${r.id}','${r.title}',null,null,null)"><span class="btn-label">Submit Quotation</span></button>`;}
+else{document.getElementById('rfqModalFooter').innerHTML=`<button class="btn btn-outline" onclick="closeModal('rfqModal')">Close</button>`;}
+}catch(e){document.getElementById('rfqModalBody').innerHTML='<p>Error.</p>';}}
+function openQuoteModal(rfqId,rfqTitle,quoteId,amount,days){document.getElementById('q_rfq_id').value=rfqId;document.getElementById('q_quote_id').value=quoteId||'';document.getElementById('q_amount').value=amount||'';document.getElementById('q_days').value=days||'';document.getElementById('q_remarks').value='';document.getElementById('q_attachment').value='';document.getElementById('quoteAlert').classList.remove('show');document.getElementById('quoteTitleLabel').textContent=(quoteId?'Edit':'Submit')+' Quotation — '+rfqTitle;openModal('quoteModal');}
+async function submitQuote(){const rfqId=document.getElementById('q_rfq_id').value,quoteId=document.getElementById('q_quote_id').value,amount=document.getElementById('q_amount').value,days=document.getElementById('q_days').value,remarks=document.getElementById('q_remarks').value.trim(),attachment=document.getElementById('q_attachment').value.trim();
+if(!amount||!days){document.getElementById('quoteAlertMsg').textContent='Amount and delivery days are required.';document.getElementById('quoteAlert').classList.add('show');return;}
+const btn=document.getElementById('submitQuoteBtn');setLoading(btn,true);document.getElementById('quoteAlert').classList.remove('show');
+try{const body={rfq_id:rfqId,quoted_amount:parseFloat(amount),delivery_days:parseInt(days),remarks,attachment_url:attachment||null};const d=quoteId?await apiPut('/quotations/'+quoteId,body):await apiPost('/quotations',body);
+if(d.success){closeModal('quoteModal');showToast('Quotation '+(quoteId?'updated':'submitted')+'!','success');loadRfqs(currentPage);}
+else{document.getElementById('quoteAlertMsg').textContent=d.message||'Failed.';document.getElementById('quoteAlert').classList.add('show');}
+}catch(e){showToast('Error','error');}setLoading(btn,false);}
+</script></body></html>

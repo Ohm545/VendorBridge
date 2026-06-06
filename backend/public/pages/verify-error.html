@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verification Failed — VendorBridge</title>
+  <link rel="stylesheet" href="auth.css"/>
+</head>
+<body class="auth-page">
+  <nav class="auth-nav">
+    <a href="../index.html" class="auth-nav-logo">
+      <div class="auth-nav-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      </div>
+      VendorBridge
+    </a>
+  </nav>
+
+  <div class="status-page">
+    <div class="status-card">
+      <div class="status-icon error">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      <h2 id="errorTitle">Verification failed</h2>
+      <p id="errorMsg">This verification link is invalid or has already been used. Please request a new one.</p>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top: 8px;">
+        <a href="login.html" class="btn-auth" style="display:inline-flex; max-width:180px;">Go to Login</a>
+        <button onclick="resendVerification()" class="btn-auth" style="background:var(--accent); max-width:220px;" id="resendBtn">
+          <span class="btn-text">Resend Verification</span>
+        </button>
+      </div>
+      <div id="resendResult" style="margin-top:16px; font-size:13px; color: var(--green); display:none;"></div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const reason = params.get('reason');
+    const titleEl = document.getElementById('errorTitle');
+    const msgEl   = document.getElementById('errorMsg');
+
+    if (reason === 'expired') {
+      titleEl.textContent = 'Verification link expired';
+      msgEl.textContent = 'Your verification link has expired (links are valid for 24 hours). Please request a new verification email.';
+    } else if (reason === 'server') {
+      titleEl.textContent = 'Something went wrong';
+      msgEl.textContent = 'An unexpected error occurred during verification. Please try again or contact support.';
+    }
+
+    async function resendVerification() {
+      const email = prompt('Enter your registered email to resend the verification:');
+      if (!email) return;
+      const btn = document.getElementById('resendBtn');
+      btn.disabled = true;
+      btn.querySelector('.btn-text').textContent = 'Sending...';
+      try {
+        const res = await fetch(`/auth/resend-verification?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+        const resultEl = document.getElementById('resendResult');
+        resultEl.textContent = data.message;
+        resultEl.style.display = 'block';
+        resultEl.style.color = data.success ? 'var(--green)' : 'var(--red)';
+      } catch(e) {
+        alert('Failed to resend. Please try again.');
+      }
+      btn.disabled = false;
+      btn.querySelector('.btn-text').textContent = 'Resend Verification';
+    }
+  </script>
+</body>
+</html>

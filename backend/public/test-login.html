@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Login Test - VendorBridge</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #1d4ed8; }
+        .message { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .credentials { background: #eff6ff; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .credentials h3 { margin-top: 0; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <h1>VendorBridge Quick Login Test</h1>
+    
+    <div class="credentials">
+        <h3>🔐 Admin Test Credentials</h3>
+        <p><strong>Email:</strong> admin@vendorbridge.com</p>
+        <p><strong>Password:</strong> Admin@12345!</p>
+    </div>
+
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="admin@vendorbridge.com" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" value="Admin@12345!" required>
+        </div>
+        
+        <button type="submit" id="loginBtn">Login to Admin Dashboard</button>
+    </form>
+    
+    <div id="message"></div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loginBtn = document.getElementById('loginBtn');
+            const messageDiv = document.getElementById('message');
+            
+            loginBtn.textContent = 'Logging in...';
+            loginBtn.disabled = true;
+            messageDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value
+                    }),
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    messageDiv.innerHTML = '<div class="message success">✅ Login successful! Redirecting to dashboard...</div>';
+                    
+                    // Store credentials for admin.js
+                    if (result.token) {
+                        localStorage.setItem('vb_token', result.token);
+                    }
+                    if (result.user && result.user.role) {
+                        localStorage.setItem('vb_role', result.user.role);
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = '/admin/dashboard.html';
+                    }, 1500);
+                } else {
+                    messageDiv.innerHTML = `<div class="message error">❌ Login failed: ${result.message || 'Unknown error'}</div>`;
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                messageDiv.innerHTML = `<div class="message error">❌ Network error: ${error.message}</div>`;
+            } finally {
+                loginBtn.textContent = 'Login to Admin Dashboard';
+                loginBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

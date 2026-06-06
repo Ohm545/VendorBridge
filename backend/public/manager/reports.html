@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reports — VendorBridge Manager</title>
+<link rel="stylesheet" href="/manager/manager.css"/></head>
+<body>
+<div class="admin-layout">
+  <div id="sidebarMount"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Reports <span class="topbar-subtitle">Generate and export reports</span></div>
+      <div class="topbar-actions"><a href="/manager/notifications" class="topbar-btn" style="position:relative"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot" style="display:none"></span></a></div>
+    </header>
+    <main class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Reports</h1><p>Generate, filter and export procurement reports</p></div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Generate Report</div></div>
+          <div class="card-body">
+            <div class="form-grid cols-1" style="gap:12px">
+              <div class="form-group"><label class="form-label">Report Type</label>
+                <select class="form-select" id="reportType" onchange="onTypeChange()">
+                  <option value="approvals">Approval Report</option>
+                  <option value="rfqs">RFQ Report</option>
+                  <option value="vendors">Vendor Report</option>
+                  <option value="performance">Officer Performance</option>
+                  <option value="workflow">Workflow Report</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">From Date</label><input type="date" class="form-input" id="fromDate"/></div>
+              <div class="form-group"><label class="form-label">To Date</label><input type="date" class="form-input" id="toDate"/></div>
+              <div class="form-group" id="statusGroup"><label class="form-label">Status</label>
+                <select class="form-select" id="statusFilter"><option value="">All</option></select>
+              </div>
+              <div class="form-group" id="vendorGroup" style="display:none"><label class="form-label">Vendor</label><input class="form-input" id="vendorFilter" placeholder="Search vendor name..."/></div>
+              <div style="display:flex;gap:8px;margin-top:4px">
+                <button class="btn btn-primary" style="flex:1" id="genBtn" onclick="generateReport()"><div class="btn-spinner"></div><span class="btn-label">Generate</span></button>
+                <button class="btn btn-outline" onclick="exportCSV()" title="CSV Export">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  CSV
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Report Summary</div></div>
+          <div class="card-body" id="summaryCard">
+            <div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg><h3>Generate a report</h3><p>Select type and click Generate</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div class="card-header">
+          <div><div class="card-title" id="resultTitle">Results</div><div class="card-subtitle" id="resultCount"></div></div>
+          <button class="btn btn-outline btn-sm" onclick="exportCSV()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
+        <div id="resultTableWrap">
+          <div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><h3>No report generated</h3><p>Use the form above</p></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="/manager/manager.js"></script>
+<script>
+fetch('/manager/sidebar.html').then(r=>r.text()).then(h=>{document.getElementById('sidebarMount').innerHTML=h;initManagerPage('reports');onTypeChange();});
+
+const STATUS_MAP={approvals:['pending','approved','rejected'],rfqs:['draft','active','quotation_received','pending_approval','approved','rejected','po_generated','invoice_generated','closed'],vendors:[],performance:[],workflow:['active','pending_approval','approved','po_generated']};
+
+function onTypeChange(){
+  const type=document.getElementById('reportType').value;
+  const opts=STATUS_MAP[type]||[];
+  const sel=document.getElementById('statusFilter');
+  sel.innerHTML='<option value="">All</option>'+opts.map(o=>`<option value="${o}">${o.replace(/_/g,' ')}</option>`).join('');
+  document.getElementById('vendorGroup').style.display=type==='approvals'||type==='rfqs'?'block':'none';
+}
+
+async function generateReport(){
+  const type=document.getElementById('reportType').value;
+  const from=document.getElementById('fromDate').value;
+  const to=document.getElementById('toDate').value;
+  const status=document.getElementById('statusFilter').value;
+  const vendor=document.getElementById('vendorFilter')?.value||'';
+  const params=new URLSearchParams({format:'json'});
+  if(from)params.set('from',from);if(to)params.set('to',to);
+  if(status)params.set('status',status);if(vendor)params.set('vendor',vendor);
+
+  const btn=document.getElementById('genBtn');setLoading(btn,true);
+  document.getElementById('resultTableWrap').innerHTML='<div style="padding:20px"><div class="skeleton" style="height:150px;border-radius:8px"></div></div>';
+
+  try{
+    const d=await apiGet('/reports/'+type+'?'+params.toString());
+    if(!d.success){showToast(d.message||'Failed','error');return;}
+    document.getElementById('resultTitle').textContent=type.replace(/_/g,' ').toUpperCase()+' Report';
+    document.getElementById('resultCount').textContent=d.total+' records';
+    document.getElementById('summaryCard').innerHTML=`
+      <div class="stat-row">
+        <div class="stat-item"><div class="stat-num">${d.total}</div><div class="stat-lbl">Total Records</div></div>
+        <div class="stat-item"><div class="stat-num">${type.charAt(0).toUpperCase()+type.slice(1)}</div><div class="stat-lbl">Report Type</div></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px">Generated on ${formatDateTime(new Date().toISOString())}</p>`;
+    if(!d.data.length){document.getElementById('resultTableWrap').innerHTML='<div class="empty-state"><h3>No records found</h3><p>Adjust filters</p></div>';return;}
+    const cols=Object.keys(d.data[0]);
+    document.getElementById('resultTableWrap').innerHTML=`<div style="overflow-x:auto"><table id="reportTable">
+      <thead><tr>${cols.map(c=>`<th>${c.replace(/_/g,' ').toUpperCase()}</th>`).join('')}</tr></thead>
+      <tbody>${d.data.slice(0,200).map(row=>`<tr>${cols.map(c=>{const v=row[c];if(v==null)return'<td class="td-muted">—</td>';if(c==='status')return`<td>${statusBadge(v)}</td>`;if(c==='priority')return`<td>${priorityBadge(v)}</td>`;if(c.includes('_at')||c.includes('date'))return`<td class="td-muted">${formatDate(v)}</td>`;if(c.includes('amount')||c.includes('budget')||c.includes('spend'))return`<td style="font-weight:600">${formatCurrency(v)}</td>`;return`<td>${v}</td>`;}).join('')}</tr>`).join('')}
+      </tbody></table></div>`;
+  }catch(e){showToast('Error','error');}
+  setLoading(btn,false);
+}
+
+async function exportCSV(){
+  const type=document.getElementById('reportType').value;
+  const from=document.getElementById('fromDate').value;
+  const to=document.getElementById('toDate').value;
+  const status=document.getElementById('statusFilter').value;
+  const params=new URLSearchParams({format:'csv'});
+  if(from)params.set('from',from);if(to)params.set('to',to);if(status)params.set('status',status);
+  await downloadCSV('/reports/'+type+'?'+params.toString(),`${type}_report_${new Date().toISOString().slice(0,10)}.csv`);
+}
+</script>
+</body></html>

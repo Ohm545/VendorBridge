@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reports — VendorBridge Procurement</title>
+<link rel="stylesheet" href="/procurement/procurement.css"/></head>
+<body>
+<div class="admin-layout">
+  <div id="sidebarMount"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Reports & Analytics <span class="topbar-subtitle">Your procurement performance</span></div>
+      <div class="topbar-actions"><a href="notifications.html" class="topbar-btn" style="position:relative"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot" style="display:none"></span></a></div>
+    </header>
+    <main class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Reports & Analytics</h1><p>Your procurement data and performance metrics</p></div>
+      </div>
+
+      <!-- Analytics Overview -->
+      <div id="analyticsGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+        <div class="skeleton" style="height:90px;border-radius:14px"></div>
+        <div class="skeleton" style="height:90px;border-radius:14px"></div>
+        <div class="skeleton" style="height:90px;border-radius:14px"></div>
+        <div class="skeleton" style="height:90px;border-radius:14px"></div>
+      </div>
+
+      <div class="two-col section-gap">
+        <!-- Vendor Performance -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Vendor Performance</div></div>
+          <div class="card-body" id="vendorPerfBody">
+            <div class="skeleton" style="height:120px;border-radius:8px"></div>
+          </div>
+        </div>
+
+        <!-- Report Generator -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Generate Report</div></div>
+          <div class="card-body">
+            <div class="form-grid cols-1" style="gap:12px">
+              <div class="form-group"><label class="form-label">Report Type</label>
+                <select class="form-select" id="reportType">
+                  <option value="rfqs">RFQs</option><option value="quotations">Quotations</option>
+                  <option value="approvals">Approvals</option>
+                  <option value="purchase_orders">Purchase Orders</option>
+                  <option value="invoices">Invoices</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">From Date</label><input type="date" class="form-input" id="fromDate"/></div>
+              <div class="form-group"><label class="form-label">To Date</label><input type="date" class="form-input" id="toDate"/></div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary" style="flex:1" onclick="generateReport()">Generate</button>
+                <button class="btn btn-outline" onclick="exportCSVReport()" title="Export CSV">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  CSV
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Results -->
+      <div class="card">
+        <div class="card-header"><div class="card-title" id="reportTitle">Report Results</div><div class="card-subtitle" id="reportCount"></div></div>
+        <div class="table-wrap" style="border:none;border-radius:0">
+          <div id="reportTableWrap"><div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><h3>Click Generate to load report</h3></div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="/procurement/procurement.js"></script>
+<script>
+fetch('/procurement/sidebar.html').then(r=>r.text()).then(h=>{document.getElementById('sidebarMount').innerHTML=h;initProcurementPage('reports');loadAnalytics();});
+
+async function loadAnalytics(){
+  try{
+    const d=await apiGet('/reports/analytics'); if(!d.success)return;
+    const s=d.data;
+    document.getElementById('analyticsGrid').innerHTML=`
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Total RFQs</span><div class="kpi-icon orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div></div><div class="kpi-value">${s.rfqs.total||0}</div><div class="kpi-footer">${s.rfqs.approved||0} approved · ${s.rfqs.rejected||0} rejected</div></div>
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Quotations</span><div class="kpi-icon blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div></div><div class="kpi-value">${s.quotations.total||0}</div><div class="kpi-footer">Avg ${s.quotations.avg_turnaround_days||0} days turnaround</div></div>
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Approval Rate</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div>
+        <div class="kpi-value">${Math.round((s.approvals.approved/(Math.max(parseInt(s.approvals.approved)+parseInt(s.approvals.rejected),1)))*100)}%</div><div class="kpi-footer">${s.approvals.approved||0} approved · ${s.approvals.rejected||0} rejected</div></div>
+      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Total Spend</span><div class="kpi-icon ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="kpi-value">${formatCurrency(s.spend.total_spend)}</div><div class="kpi-footer">${s.spend.total_pos||0} purchase orders</div></div>`;
+
+    // Vendor performance
+    const vpEl=document.getElementById('vendorPerfBody');
+    if(!s.vendor_performance.length){vpEl.innerHTML='<div class="empty-state" style="padding:20px"><p>No vendor data yet</p></div>';return;}
+    vpEl.innerHTML=s.vendor_performance.map((v,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-2)">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);width:20px">#${i+1}</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--ink)">${v.vendor_name}</div><div style="font-size:11.5px;color:var(--muted)">${v.quoted} quotes · ${v.response_rate}% response</div></div>
+        <div class="progress-track" style="width:80px"><div class="progress-fill" style="width:${v.response_rate}%"></div></div>
+      </div>`).join('');
+  }catch(e){console.error(e);}
+}
+
+async function generateReport(){
+  const type=document.getElementById('reportType').value;
+  const from=document.getElementById('fromDate').value;
+  const to=document.getElementById('toDate').value;
+  const params=new URLSearchParams({format:'json'});
+  if(from)params.set('from',from);if(to)params.set('to',to);
+  document.getElementById('reportTableWrap').innerHTML='<div style="padding:20px"><div class="skeleton" style="height:150px;border-radius:8px"></div></div>';
+  try{
+    const d=await apiGet('/reports/'+type+'?'+params.toString());
+    if(!d.success){showToast(d.message||'Failed','error');return;}
+    document.getElementById('reportTitle').textContent=type.replace('_',' ').toUpperCase()+' Report';
+    document.getElementById('reportCount').textContent=d.total+' records';
+    if(!d.data.length){document.getElementById('reportTableWrap').innerHTML='<div class="empty-state"><h3>No records found</h3><p>Try adjusting date range</p></div>';return;}
+    const cols=Object.keys(d.data[0]);
+    document.getElementById('reportTableWrap').innerHTML=`<table id="reportTable">
+      <thead><tr>${cols.map(c=>`<th>${c.replace(/_/g,' ').toUpperCase()}</th>`).join('')}</tr></thead>
+      <tbody>${d.data.slice(0,100).map(row=>`<tr>${cols.map(c=>{const v=row[c]; if(v==null)return'<td class="td-muted">—</td>';if(c==='status')return`<td>${statusBadge(v)}</td>`;if(c.includes('_at')||c.includes('date'))return`<td class="td-muted">${formatDate(v)}</td>`;if(c.includes('amount')||c.includes('spend'))return`<td style="font-weight:600">${formatCurrency(v)}</td>`;return`<td>${v}</td>`;}).join('')}</tr>`).join('')}</tbody>
+    </table>`;
+  }catch(e){showToast('Error','error');}
+}
+
+async function exportCSVReport(){
+  const type=document.getElementById('reportType').value;
+  const from=document.getElementById('fromDate').value;
+  const to=document.getElementById('toDate').value;
+  const params=new URLSearchParams({format:'csv'});
+  if(from)params.set('from',from);if(to)params.set('to',to);
+  await downloadCSV('/reports/'+type+'?'+params.toString(),`${type}_${new Date().toISOString().slice(0,10)}.csv`);
+}
+</script>
+</body></html>

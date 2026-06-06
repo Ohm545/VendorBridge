@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Quotation Comparison — VendorBridge Procurement</title>
+<link rel="stylesheet" href="/procurement/procurement.css"/></head>
+<body>
+<div class="admin-layout">
+  <div id="sidebarMount"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Quotation Comparison <span class="topbar-subtitle">AI-powered vendor recommendation</span></div>
+      <div class="topbar-actions"><a href="notifications.html" class="topbar-btn" style="position:relative"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot" style="display:none"></span></a></div>
+    </header>
+    <main class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Quotation Comparison</h1><p>Compare vendor quotes and select the best option</p></div>
+      </div>
+
+      <!-- RFQ Selector -->
+      <div class="card section-gap">
+        <div class="card-header"><div class="card-title">Select RFQ to Compare</div></div>
+        <div class="card-body" style="display:flex;gap:12px;align-items:center">
+          <select class="form-select" id="rfqSelect" style="flex:1;max-width:400px" onchange="loadComparison()">
+            <option value="">-- Select an RFQ --</option>
+          </select>
+          <button class="btn btn-outline" onclick="loadRfqsForSelect()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Comparison Area -->
+      <div id="comparisonArea" style="display:none">
+        <!-- RFQ Info -->
+        <div class="card section-gap" id="rfqInfoCard"></div>
+        <!-- Quotation Cards -->
+        <div class="section-gap">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <h3 style="font-size:16px;font-weight:700;color:var(--ink)">Vendor Quotations</h3>
+            <span id="compareCount" style="font-size:13px;color:var(--muted)"></span>
+          </div>
+          <div class="compare-grid" id="compareCards"></div>
+        </div>
+
+        <!-- AI Recommendation -->
+        <div class="two-col section-gap">
+          <div class="card" id="recommendationCard">
+            <div class="card-header">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:36px;height:36px;background:var(--ink);border-radius:9px;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="18" height="18"><path d="M12 2a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4z"/></svg></div>
+                <div><div class="card-title">AI Recommendation</div><div class="card-subtitle" id="recSubtitle">Analysis complete</div></div>
+              </div>
+            </div>
+            <div class="card-body" id="recBody">Loading...</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Select Preferred Vendor</div></div>
+            <div class="card-body">
+              <div class="form-group" style="margin-bottom:14px">
+                <label class="form-label">Preferred Vendor <span class="req">*</span></label>
+                <select class="form-select" id="preferredVendorSelect"><option value="">Select vendor...</option></select>
+              </div>
+              <p style="font-size:12.5px;color:var(--muted);margin-bottom:16px">After selecting, you can request manager approval to proceed with this vendor.</p>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary" style="flex:1" id="setVendorBtn" onclick="setPreferredVendor()"><div class="btn-spinner"></div><span class="btn-label">Set Preferred Vendor</span></button>
+                <button class="btn btn-accent" style="flex:1" id="requestApprBtn" onclick="openApprovalModal()" style="display:none">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  Request Approval
+                </button>
+              </div>
+              <div class="alert alert-success" id="vendorSetAlert" style="margin-top:12px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span id="vendorSetMsg"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="emptyComparison" class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <h3>Select an RFQ to compare quotations</h3>
+        <p>Choose an RFQ that has received quotations from vendors</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Request Approval Modal -->
+<div class="modal-overlay" id="approvalModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Request Approval</span><button class="modal-close" onclick="closeModal('approvalModal')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div class="alert alert-error" id="approvalAlert"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg><span id="approvalAlertMsg"></span></div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">Notes for Manager</label>
+        <textarea class="form-textarea" id="approvalNotes" placeholder="Add context or justification for approval..."></textarea>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted)">The manager will be notified via email and in-app notification.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('approvalModal')">Cancel</button>
+      <button class="btn btn-accent" id="submitApprBtn" onclick="submitApproval()"><div class="btn-spinner"></div><span class="btn-label">Submit Request</span></button>
+    </div>
+  </div>
+</div>
+
+<script src="/procurement/procurement.js"></script>
+<script>
+let currentRfqId=null, currentPreferredVendorId=null, compareData=null;
+
+fetch('/procurement/sidebar.html').then(r=>r.text()).then(h=>{
+  document.getElementById('sidebarMount').innerHTML=h;
+  initProcurementPage('quotations');
+  loadRfqsForSelect();
+  const urlRfq=new URLSearchParams(location.search).get('rfq');
+  if(urlRfq){document.getElementById('rfqSelect').value=urlRfq;loadComparison();}
+});
+
+async function loadRfqsForSelect(){
+  try{
+    const d=await apiGet('/rfqs?limit=100&status=quotation_received');
+    const d2=await apiGet('/rfqs?limit=100&status=active');
+    const rfqs=[...(d.data?.rfqs||[]),...(d2.data?.rfqs||[])];
+    const sel=document.getElementById('rfqSelect');
+    const cur=sel.value;
+    sel.innerHTML='<option value="">-- Select an RFQ --</option>'+rfqs.map(r=>`<option value="${r.id}">${r.title} (${r.quotation_count||0} quotes)</option>`).join('');
+    if(cur)sel.value=cur;
+  }catch(e){}
+}
+
+async function loadComparison(){
+  const rfqId=document.getElementById('rfqSelect').value;
+  if(!rfqId){document.getElementById('comparisonArea').style.display='none';document.getElementById('emptyComparison').style.display='block';return;}
+  currentRfqId=rfqId;
+  document.getElementById('comparisonArea').style.display='block';
+  document.getElementById('emptyComparison').style.display='none';
+  document.getElementById('compareCards').innerHTML='<div class="skeleton" style="height:220px;border-radius:14px"></div><div class="skeleton" style="height:220px;border-radius:14px"></div><div class="skeleton" style="height:220px;border-radius:14px"></div>';
+  try{
+    const d=await apiGet('/quotations/compare/'+rfqId);
+    if(!d.success){showToast('Failed to load comparison','error');return;}
+    compareData=d;
+    renderRfqInfo(d.rfq);
+    renderCompareCards(d.quotations,d.recommendation);
+    renderRecommendation(d.recommendation,d.quotations);
+    populateVendorSelect(d.quotations,d.rfq.preferred_vendor_id);
+    document.getElementById('compareCount').textContent=`${d.quotations.length} quotation${d.quotations.length!==1?'s':''} received`;
+  }catch(e){showToast('Error loading comparison','error');}
+}
+
+function renderRfqInfo(rfq){
+  document.getElementById('rfqInfoCard').innerHTML=`
+    <div class="card-header"><div class="card-title">${rfq.title}</div>${statusBadge(rfq.status)}</div>
+    <div class="card-body" style="display:flex;gap:24px;flex-wrap:wrap">
+      ${rfq.product_category?`<div class="stat-item"><div style="font-size:13px;font-weight:600;color:var(--ink)">${rfq.product_category}</div><div class="stat-lbl">Category</div></div>`:''}
+      ${rfq.quantity?`<div class="stat-item"><div style="font-size:13px;font-weight:600;color:var(--ink)">${rfq.quantity}</div><div class="stat-lbl">Quantity</div></div>`:''}
+      ${rfq.expected_budget?`<div class="stat-item"><div style="font-size:13px;font-weight:600;color:var(--ink)">${formatCurrency(rfq.expected_budget)}</div><div class="stat-lbl">Budget</div></div>`:''}
+      ${rfq.deadline?`<div class="stat-item"><div style="font-size:13px;font-weight:600;color:var(--ink)">${formatDate(rfq.deadline)}</div><div class="stat-lbl">Deadline</div></div>`:''}
+    </div>`;
+}
+
+function renderCompareCards(quotes,rec){
+  if(!quotes.length){document.getElementById('compareCards').innerHTML='<div class="empty-state" style="grid-column:1/-1"><h3>No quotations received yet</h3><p>Vendors have not submitted quotes for this RFQ</p></div>';return;}
+  document.getElementById('compareCards').innerHTML=quotes.map(q=>{
+    const isRec=rec&&rec.vendor_id===q.vendor_id;
+    const maxScore=Math.max(...quotes.map(x=>x.score),1);
+    return `<div class="compare-card ${isRec?'recommended':''}">
+      ${isRec?'<div class="rec-badge">⭐ Recommended</div>':''}
+      <div class="compare-vendor">${q.vendor_name}</div>
+      <div class="compare-amount ${q.is_cheapest?'best':''}">${formatCurrency(q.final_amount)}</div>
+      <span class="compare-score">Score: ${q.score}/100</span>
+      <div class="compare-bar-row"><span class="compare-bar-label">Price</span><div class="compare-bar-track"><div class="compare-bar-fill ${isRec?'best':''}" style="width:${q.price_score/40*100}%"></div></div></div>
+      <div class="compare-bar-row"><span class="compare-bar-label">Delivery</span><div class="compare-bar-track"><div class="compare-bar-fill ${isRec?'best':''}" style="width:${q.delivery_score/30*100}%"></div></div></div>
+      <div class="compare-bar-row"><span class="compare-bar-label">Reliability</span><div class="compare-bar-track"><div class="compare-bar-fill ${isRec?'best':''}" style="width:${q.reliability_score/30*100}%"></div></div></div>
+      <div style="margin-top:12px;font-size:11.5px;color:var(--muted)">
+        ${q.delivery_days?`🚚 ${q.delivery_days} days delivery`:''}
+        ${q.response_rate?` · ${q.response_rate}% response rate`:''}
+      </div>
+    </div>`;}).join('');
+}
+
+function renderRecommendation(rec,quotes){
+  const el=document.getElementById('recBody');
+  if(!rec){el.innerHTML='<div class="empty-state" style="padding:20px"><p>No quotations to analyze</p></div>';return;}
+  el.innerHTML=`
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">Recommended Vendor</div>
+      <div style="font-size:28px;font-weight:800;color:var(--ink)">${rec.vendor_name}</div>
+      <div style="font-size:14px;color:var(--green);font-weight:600;margin-top:4px">${formatCurrency(rec.amount)} — Best value</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${rec.reasons.map(r=>`<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-3)">
+        <div style="width:24px;height:24px;background:var(--green-l);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>${r}</div>`).join('')}
+    </div>`;
+}
+
+function populateVendorSelect(quotes,preferredId){
+  const sel=document.getElementById('preferredVendorSelect');
+  sel.innerHTML='<option value="">Select vendor...</option>'+quotes.map(q=>`<option value="${q.vendor_id}">${q.vendor_name} — ${formatCurrency(q.final_amount)}</option>`).join('');
+  if(preferredId)sel.value=preferredId;
+  document.getElementById('requestApprBtn').style.display=preferredId?'flex':'none';
+  currentPreferredVendorId=preferredId;
+}
+
+async function setPreferredVendor(){
+  const vendorId=document.getElementById('preferredVendorSelect').value;
+  if(!vendorId||!currentRfqId){showToast('Select a vendor first','warning');return;}
+  const btn=document.getElementById('setVendorBtn');
+  setLoading(btn,true);
+  try{
+    const d=await apiPatch('/rfqs/'+currentRfqId+'/preferred-vendor',{vendor_id:vendorId});
+    if(d.success){
+      currentPreferredVendorId=vendorId;
+      document.getElementById('vendorSetMsg').textContent='Preferred vendor saved. You can now request approval.';
+      document.getElementById('vendorSetAlert').classList.add('show');
+      document.getElementById('requestApprBtn').style.display='flex';
+    }else showToast(d.message||'Failed','error');
+  }catch(e){showToast('Error','error');}
+  setLoading(btn,false);
+}
+
+function openApprovalModal(){
+  if(!currentPreferredVendorId){showToast('Set a preferred vendor first','warning');return;}
+  document.getElementById('approvalNotes').value='';
+  document.getElementById('approvalAlert').classList.remove('show');
+  openModal('approvalModal');
+}
+
+async function submitApproval(){
+  const notes=document.getElementById('approvalNotes').value.trim();
+  const btn=document.getElementById('submitApprBtn');
+  setLoading(btn,true);
+  document.getElementById('approvalAlert').classList.remove('show');
+  try{
+    const d=await apiPost('/approvals',{rfq_id:currentRfqId,preferred_vendor_id:currentPreferredVendorId,notes});
+    if(d.success){closeModal('approvalModal');showToast('Approval request submitted to manager!','success');loadComparison();}
+    else{document.getElementById('approvalAlertMsg').textContent=d.message||'Failed.';document.getElementById('approvalAlert').classList.add('show');}
+  }catch(e){showToast('Error','error');}
+  setLoading(btn,false);
+}
+</script>
+</body></html>

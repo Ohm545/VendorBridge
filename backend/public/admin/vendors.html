@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Vendor Management — VendorBridge Admin</title>
+<link rel="stylesheet" href="/admin/admin.css"/>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebarMount"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Vendor Management <span class="topbar-subtitle">Manage vendor registry</span></div>
+      <div class="topbar-actions">
+        <a href="notifications.html" class="topbar-btn" style="position:relative">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </a>
+      </div>
+    </header>
+    <main class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Vendor Management</h1><p>Add, edit and manage procurement vendors</p></div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" onclick="openModal('addVendorModal')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span class="btn-label">Add Vendor</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="filters-bar" style="margin:0;flex:1">
+            <div class="search-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="search-input" id="searchInput" placeholder="Search vendors..." oninput="debouncedLoad()"/>
+            </div>
+            <select class="filter-select" id="statusFilter" onchange="loadVendors(1)">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <select class="filter-select" id="categoryFilter" onchange="loadVendors(1)">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Vendor</th><th>Contact</th><th>Category</th><th>Email</th><th>RFQs</th><th>Quotes</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="vendorsBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="vendorsPagination"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add Vendor Modal -->
+<div class="modal-overlay" id="addVendorModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title" id="vendorModalTitle">Add Vendor</span>
+      <button class="modal-close" onclick="closeModal('addVendorModal')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-error" id="vendorAlert"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span id="vendorAlertMsg"></span></div>
+      <input type="hidden" id="v_id"/>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Vendor Name <span class="req">*</span></label><input class="form-input" id="v_name" placeholder="TechCorp Supplies"/></div>
+        <div class="form-group"><label class="form-label">Company Name <span class="req">*</span></label><input class="form-input" id="v_company" placeholder="TechCorp Ltd"/></div>
+        <div class="form-group"><label class="form-label">Contact Person <span class="req">*</span></label><input class="form-input" id="v_contact" placeholder="Rajesh Kumar"/></div>
+        <div class="form-group"><label class="form-label">Email <span class="req">*</span></label><input class="form-input" id="v_email" type="email" placeholder="vendor@company.com"/></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="v_phone" placeholder="+91 98765 43210"/></div>
+        <div class="form-group"><label class="form-label">GST Number</label><input class="form-input" id="v_gst" placeholder="22AAAAA0000A1Z5"/></div>
+        <div class="form-group"><label class="form-label">Category</label><input class="form-input" id="v_category" placeholder="IT Equipment, Office Supplies..."/></div>
+        <div class="form-group full"><label class="form-label">Address</label><textarea class="form-textarea" id="v_address" placeholder="Full address..."></textarea></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">A vendor portal account will be automatically created and credentials sent via email.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('addVendorModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveVendorBtn" onclick="saveVendor()">
+        <div class="btn-spinner"></div><span class="btn-label">Save Vendor</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Vendor Profile Modal -->
+<div class="modal-overlay" id="vendorProfileModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">Vendor Profile</span>
+      <button class="modal-close" onclick="closeModal('vendorProfileModal')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" id="vendorProfileBody">Loading...</div>
+  </div>
+</div>
+
+<script src="/admin/admin.js"></script>
+<script>
+fetch('/admin/sidebar.html').then(r=>r.text()).then(h=>{
+  document.getElementById('sidebarMount').innerHTML=h;
+  initAdminPage('vendors');
+  loadCategories();
+  loadVendors(1);
+});
+
+let debounceTimer, currentPage=1, editingId=null;
+function debouncedLoad(){clearTimeout(debounceTimer);debounceTimer=setTimeout(()=>loadVendors(1),350);}
+
+async function loadCategories(){
+  try{
+    const d=await apiGet('/vendors/categories');
+    if(!d.success)return;
+    const sel=document.getElementById('categoryFilter');
+    d.categories.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  }catch(e){}
+}
+
+async function loadVendors(page=1){
+  currentPage=page;
+  const search=document.getElementById('searchInput').value.trim();
+  const status=document.getElementById('statusFilter').value;
+  const category=document.getElementById('categoryFilter').value;
+  const params=new URLSearchParams({page,limit:15});
+  if(search)params.set('search',search);
+  if(status)params.set('status',status);
+  if(category)params.set('category',category);
+  document.getElementById('vendorsBody').innerHTML='<tr><td colspan="8"><div class="empty-state"><p>Loading...</p></div></td></tr>';
+  try{
+    const d=await apiGet('/vendors?'+params.toString());
+    if(!d.success){showToast('Failed to load vendors','error');return;}
+    renderVendors(d.data.vendors);
+    renderPagination('vendorsPagination',d.data.pagination,loadVendors);
+  }catch(e){showToast('Error loading vendors','error');}
+}
+
+function renderVendors(vendors){
+  const tbody=document.getElementById('vendorsBody');
+  if(!vendors.length){
+    tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><h3>No vendors found</h3><p>Add your first vendor to get started</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML=vendors.map(v=>`
+    <tr>
+      <td><div class="td-name">${v.vendor_name}</div><div class="td-muted">${v.company_name}</div></td>
+      <td><div style="font-size:13px">${v.contact_person}</div><div class="td-muted">${v.phone||'—'}</div></td>
+      <td>${v.category?`<span class="badge badge-info">${v.category}</span>`:'<span class="td-muted">—</span>'}</td>
+      <td style="font-size:13px">${v.email}</td>
+      <td style="font-size:13px;font-weight:600">${v.assigned_rfqs||0}</td>
+      <td style="font-size:13px;font-weight:600">${v.submitted_quotations||0}</td>
+      <td>${statusBadge(v.status)}</td>
+      <td>
+        <div class="td-actions">
+          <button class="btn btn-ghost btn-sm btn-icon" title="View Profile" onclick="viewVendor('${v.id}')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-sm btn-icon" title="Edit" onclick='openEditVendor(${JSON.stringify(v)})'>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn btn-sm btn-icon ${v.status==='active'?'btn-danger':'btn-success'}" onclick="toggleVendorStatus('${v.id}','${v.status==='active'?'inactive':'active'}','${v.vendor_name}')">
+            ${v.status==='active'
+              ?'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="8" x2="16" y2="16"/></svg>'
+              :'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'}
+          </button>
+          <button class="btn btn-danger btn-sm btn-icon" title="Delete" onclick="deleteVendor('${v.id}','${v.vendor_name}')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function openEditVendor(v){
+  editingId=v.id;
+  document.getElementById('vendorModalTitle').textContent='Edit Vendor';
+  document.getElementById('v_id').value=v.id;
+  document.getElementById('v_name').value=v.vendor_name;
+  document.getElementById('v_company').value=v.company_name;
+  document.getElementById('v_contact').value=v.contact_person;
+  document.getElementById('v_email').value=v.email;
+  document.getElementById('v_email').disabled=true;
+  document.getElementById('v_phone').value=v.phone||'';
+  document.getElementById('v_gst').value=v.gst_number||'';
+  document.getElementById('v_category').value=v.category||'';
+  document.getElementById('v_address').value=v.address||'';
+  document.getElementById('vendorAlert').classList.remove('show');
+  openModal('addVendorModal');
+}
+
+async function saveVendor(){
+  const btn=document.getElementById('saveVendorBtn');
+  const id=document.getElementById('v_id').value;
+  const body={
+    vendor_name:document.getElementById('v_name').value.trim(),
+    company_name:document.getElementById('v_company').value.trim(),
+    contact_person:document.getElementById('v_contact').value.trim(),
+    email:document.getElementById('v_email').value.trim(),
+    phone:document.getElementById('v_phone').value.trim(),
+    gst_number:document.getElementById('v_gst').value.trim(),
+    category:document.getElementById('v_category').value.trim(),
+    address:document.getElementById('v_address').value.trim(),
+  };
+  if(!body.vendor_name||!body.company_name||!body.contact_person||!body.email){
+    document.getElementById('vendorAlertMsg').textContent='Required fields are missing.';
+    document.getElementById('vendorAlert').classList.add('show'); return;
+  }
+  setLoading(btn,true);
+  try{
+    const d=id?await apiPut('/vendors/'+id,body):await apiPost('/vendors',body);
+    if(!d.success){
+      document.getElementById('vendorAlertMsg').textContent=d.message||'Failed.';
+      document.getElementById('vendorAlert').classList.add('show');
+    }else{
+      closeModal('addVendorModal');
+      showToast(id?'Vendor updated!':'Vendor created!','success');
+      resetVendorForm(); loadVendors(currentPage);
+    }
+  }catch(e){showToast('Error','error');}
+  setLoading(btn,false);
+}
+
+function resetVendorForm(){
+  editingId=null;
+  document.getElementById('v_id').value='';
+  ['v_name','v_company','v_contact','v_email','v_phone','v_gst','v_category','v_address']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('v_email').disabled=false;
+  document.getElementById('vendorModalTitle').textContent='Add Vendor';
+  document.getElementById('vendorAlert').classList.remove('show');
+}
+
+document.addEventListener('click',e=>{if(e.target.id==='addVendorModal')resetVendorForm();});
+
+async function toggleVendorStatus(id,status,name){
+  const ok=await showConfirm({title:status==='inactive'?'Deactivate Vendor':'Activate Vendor',
+    message:`${status==='inactive'?'Deactivate':'Activate'} <strong>${name}</strong>?`,
+    confirmText:status==='inactive'?'Deactivate':'Activate',type:status==='inactive'?'danger':'success'});
+  if(!ok)return;
+  try{
+    const d=await apiPatch('/vendors/'+id+'/status',{status});
+    if(d.success){showToast('Vendor status updated!','success');loadVendors(currentPage);}
+    else showToast(d.message||'Failed','error');
+  }catch(e){showToast('Error','error');}
+}
+
+async function deleteVendor(id,name){
+  const ok=await showConfirm({title:'Delete Vendor',message:`Permanently delete <strong>${name}</strong>? This cannot be undone.`,confirmText:'Delete',type:'danger'});
+  if(!ok)return;
+  try{
+    const d=await apiDelete('/vendors/'+id);
+    if(d.success){showToast('Vendor deleted.','success');loadVendors(currentPage);}
+    else showToast(d.message||'Failed','error');
+  }catch(e){showToast('Error','error');}
+}
+
+async function viewVendor(id){
+  openModal('vendorProfileModal');
+  document.getElementById('vendorProfileBody').innerHTML='<div class="skeleton" style="height:200px;border-radius:10px"></div>';
+  try{
+    const d=await apiGet('/vendors/'+id);
+    if(!d.success){document.getElementById('vendorProfileBody').innerHTML='<p>Failed to load vendor.</p>';return;}
+    const v=d.vendor;
+    document.getElementById('vendorProfileBody').innerHTML=`
+      <div class="stat-row" style="margin-bottom:20px">
+        <div class="stat-item"><div class="stat-num">${v.assigned_rfqs||0}</div><div class="stat-lbl">Assigned RFQs</div></div>
+        <div class="stat-item"><div class="stat-num">${v.submitted_quotations||0}</div><div class="stat-lbl">Quotations</div></div>
+        <div class="stat-item"><div class="stat-num">${v.approved_quotations||0}</div><div class="stat-lbl">Approved</div></div>
+        <div class="stat-item"><div class="stat-num">${v.purchase_orders||0}</div><div class="stat-lbl">POs Issued</div></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Vendor Name</label><div class="form-input" style="background:var(--surface-2)">${v.vendor_name}</div></div>
+        <div class="form-group"><label class="form-label">Company</label><div class="form-input" style="background:var(--surface-2)">${v.company_name}</div></div>
+        <div class="form-group"><label class="form-label">Contact Person</label><div class="form-input" style="background:var(--surface-2)">${v.contact_person}</div></div>
+        <div class="form-group"><label class="form-label">Email</label><div class="form-input" style="background:var(--surface-2)">${v.email}</div></div>
+        <div class="form-group"><label class="form-label">Phone</label><div class="form-input" style="background:var(--surface-2)">${v.phone||'—'}</div></div>
+        <div class="form-group"><label class="form-label">GST</label><div class="form-input" style="background:var(--surface-2)">${v.gst_number||'—'}</div></div>
+        <div class="form-group"><label class="form-label">Category</label><div class="form-input" style="background:var(--surface-2)">${v.category||'—'}</div></div>
+        <div class="form-group"><label class="form-label">Status</label><div style="padding:9px 0">${statusBadge(v.status)}</div></div>
+        <div class="form-group full"><label class="form-label">Address</label><div class="form-input" style="background:var(--surface-2);min-height:60px">${v.address||'—'}</div></div>
+      </div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-2);font-size:12px;color:var(--muted)">
+        Avg response time: <strong>${Math.round(v.avg_response_hours||0)}h</strong> &nbsp;|&nbsp;
+        Added: <strong>${formatDate(v.created_at)}</strong>
+      </div>`;
+  }catch(e){document.getElementById('vendorProfileBody').innerHTML='<p>Error loading vendor.</p>';}
+}
+</script>
+</body>
+</html>

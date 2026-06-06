@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard — VendorBridge Admin</title>
+<link rel="stylesheet" href="/admin/admin.css"/>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebarMount"></div>
+  <div class="main-content">
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="topbar-btn topbar-hamburger" id="hamburger">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-title">Dashboard <span class="topbar-subtitle">Overview & Analytics</span></div>
+      <div class="topbar-actions">
+        <button class="topbar-btn" onclick="location.reload()" title="Refresh">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+        <a href="notifications.html" class="topbar-btn" style="position:relative">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </a>
+      </div>
+    </header>
+
+    <main class="page-body">
+      <!-- Page header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Admin Dashboard</h1>
+          <p>Real-time overview of procurement operations</p>
+        </div>
+        <div class="page-header-actions">
+          <a href="reports.html" class="btn btn-outline">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span class="btn-label">Reports</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Total Users</span><div class="kpi-icon blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div></div><div class="kpi-value skeleton" id="kpi-users" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Registered accounts</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Total Vendors</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></div><div class="kpi-value skeleton" id="kpi-vendors" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Active vendor registry</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Active RFQs</span><div class="kpi-icon orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div></div><div class="kpi-value skeleton" id="kpi-rfqs" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Open procurement requests</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Pending Approvals</span><div class="kpi-icon red"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value skeleton" id="kpi-approvals" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Awaiting review</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Purchase Orders</span><div class="kpi-icon ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div></div><div class="kpi-value skeleton" id="kpi-po" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Total generated</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Invoices</span><div class="kpi-icon purple"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div></div><div class="kpi-value skeleton" id="kpi-invoices" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Total generated</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Procurement Value</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="kpi-value skeleton" id="kpi-spend" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Total approved PO value</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Vendor Response Rate</span><div class="kpi-icon blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div></div><div class="kpi-value skeleton" id="kpi-response" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Quotations / RFQs assigned</div></div>
+      </div>
+
+      <!-- Charts + Insights row -->
+      <div class="two-col section-gap">
+        <!-- Monthly Trend Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Monthly Procurement Trend</div><div class="card-subtitle">Last 12 months</div></div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mid)"><span style="width:10px;height:3px;background:#2563eb;border-radius:2px;display:inline-block"></span>Spend</span>
+              <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--mid)"><span style="width:10px;height:3px;background:#16a34a;border-radius:2px;display:inline-block"></span>POs</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-wrap"><canvas id="trendChart" style="height:200px"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Smart Insights -->
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Smart Insights</div><div class="card-subtitle">Auto-generated from data</div></div>
+            <button class="btn btn-ghost btn-sm" onclick="loadInsights()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="insights-list" id="insightsList">
+              <div class="skeleton" style="height:56px;border-radius:10px;margin-bottom:10px"></div>
+              <div class="skeleton" style="height:56px;border-radius:10px;margin-bottom:10px"></div>
+              <div class="skeleton" style="height:56px;border-radius:10px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ Funnel + Vendor Perf row -->
+      <div class="two-col section-gap">
+        <div class="card">
+          <div class="card-header"><div class="card-title">RFQ Funnel</div><div class="card-subtitle">Conversion rates</div></div>
+          <div class="card-body"><div class="funnel-list" id="funnelList">
+            <div class="skeleton" style="height:28px;border-radius:6px;margin-bottom:12px"></div>
+            <div class="skeleton" style="height:28px;border-radius:6px;margin-bottom:12px"></div>
+            <div class="skeleton" style="height:28px;border-radius:6px;margin-bottom:12px"></div>
+            <div class="skeleton" style="height:28px;border-radius:6px;margin-bottom:12px"></div>
+            <div class="skeleton" style="height:28px;border-radius:6px"></div>
+          </div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Top Vendors</div><div class="card-subtitle">By quotation activity</div></div>
+          <div class="card-body">
+            <div id="topVendorsList">
+              <div class="skeleton" style="height:20px;border-radius:6px;margin-bottom:10px"></div>
+              <div class="skeleton" style="height:20px;border-radius:6px;margin-bottom:10px"></div>
+              <div class="skeleton" style="height:20px;border-radius:6px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="/admin/admin.js"></script>
+<script>
+// Wait for admin.js to load and DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait for admin.js functions to be available
+  function waitForAdminJS() {
+    if (typeof initAdminPage === 'function' && typeof apiGet === 'function') {
+      initializeDashboard();
+    } else {
+      setTimeout(waitForAdminJS, 50);
+    }
+  }
+  
+  waitForAdminJS();
+});
+
+// Initialize dashboard after admin.js is loaded
+function initializeDashboard() {
+  fetch('/admin/sidebar.html')
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('sidebarMount').innerHTML = html;
+      initAdminPage('dashboard');
+      loadDashboard();
+    })
+    .catch(error => {
+      console.error('Failed to initialize dashboard:', error);
+    });
+}
+
+function loadDashboard() {
+  Promise.all([loadStats(), loadInsights(), loadMonthlyTrend(), loadFunnel(), loadTopVendors()])
+    .catch(console.error);
+}
+
+function loadStats() {
+  return apiGet('/dashboard/stats')
+    .then(d => {
+      if (!d.success) return;
+      const s = d.data;
+      document.getElementById('kpi-users').className = 'kpi-value';
+      document.getElementById('kpi-vendors').className = 'kpi-value';
+      document.getElementById('kpi-rfqs').className = 'kpi-value';
+      document.getElementById('kpi-approvals').className = 'kpi-value';
+      document.getElementById('kpi-po').className = 'kpi-value';
+      document.getElementById('kpi-invoices').className = 'kpi-value';
+      document.getElementById('kpi-spend').className = 'kpi-value';
+      document.getElementById('kpi-response').className = 'kpi-value';
+      document.getElementById('kpi-users').textContent = s.total_users || '0';
+      document.getElementById('kpi-vendors').textContent = s.total_vendors || '0';
+      document.getElementById('kpi-rfqs').textContent = s.active_rfqs || '0';
+      document.getElementById('kpi-approvals').textContent = s.pending_approvals || '0';
+      document.getElementById('kpi-po').textContent = s.purchase_orders || '0';
+      document.getElementById('kpi-invoices').textContent = s.invoices || '0';
+      document.getElementById('kpi-spend').textContent = formatCurrency(s.total_procurement_value || 0);
+      document.getElementById('kpi-response').textContent = (s.vendor_response_rate || 0) + '%';
+    })
+    .catch(e => console.error('Load stats error:', e));
+}
+
+function loadInsights() {
+  return apiGet('/dashboard/insights')
+    .then(d => {
+      if (!d.success) return;
+      const list = document.getElementById('insightsList');
+      list.innerHTML = (d.insights || []).map(i => `
+        <div class="insight-item">
+          <div class="insight-icon ${i.type || 'info'}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              ${i.type==='warning'?'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>':
+               i.type==='error'?'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>':
+               i.type==='success'?'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>':
+               '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'}
+            </svg>
+          </div>
+          <span class="insight-text">${i.text || 'No insight available'}</span>
+        </div>`).join('');
+    })
+    .catch(e => console.error('Load insights error:', e));
+}
+
+function loadMonthlyTrend() {
+  return apiGet('/dashboard/monthly-trend')
+    .then(d => {
+      if (!d.success || !d.data || !d.data.length) return;
+      const labels = d.data.map(r => r.label ? r.label.split(' ')[0] : 'Unknown');
+      const spend = d.data.map(r => parseFloat(r.spend) || 0);
+      const pos = d.data.map(r => parseInt(r.pos) || 0);
+      
+      if (typeof drawLineChart === 'function') {
+        drawLineChart('trendChart', labels, [
+          { data: spend, color: '#2563eb', label: 'Spend' },
+          { data: pos, color: '#16a34a', label: 'POs' },
+        ]);
+      }
+    })
+    .catch(e => console.error('Load monthly trend error:', e));
+}
+
+function loadFunnel() {
+  return apiGet('/analytics/rfq-funnel')
+    .then(d => {
+      if (!d.success) return;
+      const el = document.getElementById('funnelList');
+      el.innerHTML = (d.funnel || []).map(f => `
+        <div class="funnel-item">
+          <span class="funnel-label">${f.stage || 'Unknown Stage'}</span>
+          <div class="funnel-bar-wrap">
+            <div class="funnel-bar" style="width:${f.pct || 0}%"><span>${f.pct || 0}%</span></div>
+          </div>
+          <span class="funnel-count">${f.count || 0}</span>
+        </div>`).join('');
+    })
+    .catch(e => console.error('Load funnel error:', e));
+}
+
+function loadTopVendors() {
+  return apiGet('/analytics/vendors')
+    .then(d => {
+      if (!d.success) return;
+      const el = document.getElementById('topVendorsList');
+      if (!d.vendors || !d.vendors.length) { 
+        el.innerHTML = '<div class="empty-state" style="padding:20px"><p>No vendor data yet</p></div>'; 
+        return; 
+      }
+      el.innerHTML = d.vendors.slice(0,5).map((v,i) => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-2)">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);width:18px">#${i+1}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.vendor_name || 'Unknown Vendor'}</div>
+            <div style="font-size:11.5px;color:var(--muted)">${v.quotations || 0} quotations · ${v.response_rate || 0}% response</div>
+          </div>
+          <div class="progress-track" style="width:80px">
+            <div class="progress-fill" style="width:${v.response_rate || 0}%"></div>
+          </div>
+        </div>`).join('');
+    })
+    .catch(e => console.error('Load top vendors error:', e));
+}
+</script>
+</body>
+</html>

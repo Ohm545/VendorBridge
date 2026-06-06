@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Profile — VendorBridge Vendor</title><link rel="stylesheet" href="/vendor/vendor.css"/></head>
+<body><div class="admin-layout"><div id="sidebarMount"></div><div class="main-content">
+<header class="topbar"><button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+<div class="topbar-title">Profile <span class="topbar-subtitle">Your vendor account information</span></div>
+<div class="topbar-actions"><a href="/vendor/notifications" class="topbar-btn" style="position:relative"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot" style="display:none"></span></a></div></header>
+<main class="page-body">
+<div class="page-header"><div class="page-header-left"><h1>My Profile</h1><p>View and update your vendor account details</p></div></div>
+<div style="max-width:720px">
+  <!-- Profile card -->
+  <div class="card section-gap">
+    <div class="card-header"><div class="card-title">Vendor Information</div><span id="profileBadge" class="badge badge-active">Active</span></div>
+    <div class="card-body">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border-2)">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--vendor);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;flex-shrink:0" id="profileAvatar">V</div>
+        <div><div style="font-size:20px;font-weight:800;color:var(--ink)" id="profileName">Loading...</div><div style="font-size:13px;color:var(--muted)" id="profileEmail">—</div><div style="margin-top:4px" id="profileCategory"></div></div>
+      </div>
+      <div class="form-grid">
+        <div><label class="form-label">Vendor Name</label><div class="form-input" style="background:var(--surface-2)" id="disp_vendor_name">—</div></div>
+        <div><label class="form-label">GST Number</label><div class="form-input" style="background:var(--surface-2)" id="disp_gst">—</div></div>
+        <div><label class="form-label">Email (Login)</label><div class="form-input" style="background:var(--surface-2)" id="disp_email">—</div></div>
+        <div><label class="form-label">Phone</label><div class="form-input" style="background:var(--surface-2)" id="disp_phone">—</div></div>
+        <div class="full"><label class="form-label">Address</label><div class="form-input" style="background:var(--surface-2);min-height:60px" id="disp_address">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit card -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">Edit Profile</div></div>
+    <div class="card-body">
+      <div class="alert alert-success" id="profileSuccess"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>Profile updated successfully.</span></div>
+      <div class="alert alert-error" id="profileError"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg><span id="profileErrorMsg"></span></div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Company Name</label><input class="form-input" id="edit_company" placeholder="Your company name"/></div>
+        <div class="form-group"><label class="form-label">Contact Person</label><input class="form-input" id="edit_contact" placeholder="Primary contact person"/></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="edit_phone" placeholder="+91 98765 43210"/></div>
+        <div class="form-group full"><label class="form-label">Address</label><textarea class="form-textarea" id="edit_address" placeholder="Full business address..."></textarea></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">Email and role cannot be changed. Contact admin for assistance.</p>
+    </div>
+    <div class="card-footer" style="display:flex;justify-content:flex-end">
+      <button class="btn btn-primary" id="saveProfileBtn" onclick="saveProfile()"><div class="btn-spinner"></div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v14a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span class="btn-label">Save Changes</span></button>
+    </div>
+  </div>
+
+  <!-- Change password -->
+  <div class="card" style="margin-top:20px">
+    <div class="card-header"><div class="card-title">Security</div></div>
+    <div class="card-body">
+      <a href="/pages/forgot-password.html" class="btn btn-outline" style="width:100%;justify-content:center;display:flex"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Change Password</a>
+    </div>
+  </div>
+</div></main></div></div>
+<script src="/vendor/vendor.js"></script>
+<script>
+fetch('/vendor/sidebar.html').then(r=>r.text()).then(h=>{document.getElementById('sidebarMount').innerHTML=h;initVendorPage('profile');loadProfile();});
+async function loadProfile(){
+  try{const d=await apiGet('/profile');if(!d.success)return;const p=d.profile;
+  document.getElementById('profileAvatar').textContent=(p.vendor_name||'V').charAt(0).toUpperCase();
+  document.getElementById('profileName').textContent=p.vendor_name||'—';
+  document.getElementById('profileEmail').textContent=p.login_email||p.email||'—';
+  document.getElementById('profileCategory').innerHTML=p.category?`<span class="badge badge-info">${p.category}</span>`:'';
+  document.getElementById('profileBadge').className='badge badge-'+(p.status==='active'?'active':'error');
+  document.getElementById('profileBadge').textContent=p.status||'active';
+  document.getElementById('disp_vendor_name').textContent=p.vendor_name||'—';
+  document.getElementById('disp_gst').textContent=p.gst_number||'—';
+  document.getElementById('disp_email').textContent=p.login_email||p.email||'—';
+  document.getElementById('disp_phone').textContent=p.phone||'—';
+  document.getElementById('disp_address').textContent=p.address||'—';
+  document.getElementById('edit_company').value=p.company_name||'';
+  document.getElementById('edit_contact').value=p.contact_person||'';
+  document.getElementById('edit_phone').value=p.phone||'';
+  document.getElementById('edit_address').value=p.address||'';
+  localStorage.setItem('vb_name',p.contact_person||p.vendor_name);
+  const navName=document.getElementById('userName');if(navName)navName.textContent=p.contact_person||p.vendor_name;
+  const navAv=document.getElementById('userAvatar');if(navAv)navAv.textContent=(p.contact_person||p.vendor_name||'V').charAt(0).toUpperCase();
+  }catch(e){showToast('Error loading profile','error');}}
+async function saveProfile(){
+  const btn=document.getElementById('saveProfileBtn');
+  const body={company_name:document.getElementById('edit_company').value.trim(),contact_person:document.getElementById('edit_contact').value.trim(),phone:document.getElementById('edit_phone').value.trim(),address:document.getElementById('edit_address').value.trim()};
+  document.getElementById('profileSuccess').classList.remove('show');document.getElementById('profileError').classList.remove('show');
+  setLoading(btn,true);
+  try{const d=await apiPut('/profile',body);if(d.success){document.getElementById('profileSuccess').classList.add('show');showToast('Profile updated!','success');loadProfile();}else{document.getElementById('profileErrorMsg').textContent=d.message||'Failed.';document.getElementById('profileError').classList.add('show');}}catch(e){showToast('Error','error');}
+  setLoading(btn,false);}
+</script></body></html>

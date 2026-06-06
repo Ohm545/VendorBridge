@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Approvals — VendorBridge Manager</title>
+<link rel="stylesheet" href="/manager/manager.css"/></head>
+<body>
+<div class="admin-layout">
+  <div id="sidebarMount"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Approvals <span class="topbar-subtitle">Review and decide on procurement requests</span></div>
+      <div class="topbar-actions">
+        <a href="/manager/notifications" class="topbar-btn" style="position:relative"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot" style="display:none"></span></a>
+      </div>
+    </header>
+    <main class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Approval Requests</h1><p>Review quotations and approve or reject procurement requests</p></div>
+      </div>
+
+      <!-- Status Tabs -->
+      <div class="tabs">
+        <div class="tab active" onclick="filterStatus('',this)">All</div>
+        <div class="tab" onclick="filterStatus('pending',this)">⏳ Pending</div>
+        <div class="tab" onclick="filterStatus('approved',this)">✅ Approved</div>
+        <div class="tab" onclick="filterStatus('rejected',this)">❌ Rejected</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="filters-bar" style="margin:0;flex:1">
+            <div class="search-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="search-input" id="searchInput" placeholder="Search RFQ or vendor..." oninput="debouncedLoad()"/></div>
+            <select class="filter-select" id="priorityFilter" onchange="loadApprovals(1)">
+              <option value="">All Priority</option>
+              <option value="urgent">🔴 Urgent</option><option value="high">↑ High</option>
+              <option value="normal">– Normal</option><option value="low">↓ Low</option>
+            </select>
+            <select class="filter-select" id="categoryFilter" onchange="loadApprovals(1)">
+              <option value="">All Categories</option>
+            </select>
+            <input type="date" class="filter-select" id="fromDate" onchange="loadApprovals(1)" style="min-width:140px"/>
+            <input type="date" class="filter-select" id="toDate" onchange="loadApprovals(1)" style="min-width:140px"/>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>RFQ Title</th><th>Officer</th><th>Preferred Vendor</th><th>Budget</th><th>Requested</th><th>Pending (hrs)</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="approvalsBody"><tr><td colspan="9"><div class="empty-state"><p>Loading...</p></div></td></tr></tbody></table>
+        </div>
+        <div class="pagination" id="approvalsPagination"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Approval Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal modal-xl">
+    <div class="modal-header">
+      <span class="modal-title" id="detailModalTitle">Approval Detail</span>
+      <button class="modal-close" onclick="closeModal('detailModal')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body" id="detailBody">Loading...</div>
+    <div class="modal-footer" id="detailFooter"></div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Reject Request</span>
+      <button class="modal-close" onclick="closeModal('rejectModal')"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-error" id="rejectAlert"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg><span id="rejectAlertMsg"></span></div>
+      <input type="hidden" id="rejectApprId"/>
+      <div class="form-group">
+        <label class="form-label">Rejection Reason <span style="color:var(--red)">*</span></label>
+        <textarea class="form-textarea" id="rejectRemarks" placeholder="Provide a clear reason for rejection. This will be sent to the Procurement Officer." style="min-height:100px"></textarea>
+        <span class="form-hint">Required — will be emailed to the Procurement Officer</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('rejectModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmRejectBtn" onclick="confirmReject()"><div class="btn-spinner"></div><span class="btn-label">Reject Request</span></button>
+    </div>
+  </div>
+</div>
+
+<script src="/manager/manager.js"></script>
+<script>
+fetch('/manager/sidebar.html').then(r=>r.text()).then(h=>{
+  document.getElementById('sidebarMount').innerHTML=h;
+  initManagerPage('approvals');
+  loadCategories();
+  // Read URL param for pre-filter
+  const urlStatus=new URLSearchParams(location.search).get('status');
+  if(urlStatus){
+    currentStatus=urlStatus;
+    document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('active',t.textContent.toLowerCase().includes(urlStatus));});
+  }
+  loadApprovals(1);
+});
+
+let debounceTimer,currentPage=1,currentStatus='';
+function debouncedLoad(){clearTimeout(debounceTimer);debounceTimer=setTimeout(()=>loadApprovals(1),350);}
+
+function filterStatus(status,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  currentStatus=status;loadApprovals(1);
+}
+
+async function loadCategories(){
+  try{
+    const r=await fetch('/api/procurement/rfqs/categories',{headers:{'Authorization':'Bearer '+getToken()},credentials:'include'});
+    const d=await r.json();if(!d.success)return;
+    const sel=document.getElementById('categoryFilter');
+    d.categories.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  }catch(e){}
+}
+
+async function loadApprovals(page=1){
+  currentPage=page;
+  const search=document.getElementById('searchInput').value.trim();
+  const priority=document.getElementById('priorityFilter').value;
+  const category=document.getElementById('categoryFilter').value;
+  const from=document.getElementById('fromDate').value;
+  const to=document.getElementById('toDate').value;
+  const params=new URLSearchParams({page,limit:15});
+  if(currentStatus)params.set('status',currentStatus);
+  if(search)params.set('search',search);
+  if(priority)params.set('priority',priority);
+  if(category)params.set('category',category);
+  if(from)params.set('from',from);if(to)params.set('to',to);
+
+  document.getElementById('approvalsBody').innerHTML='<tr><td colspan="9"><div class="empty-state"><p>Loading...</p></div></td></tr>';
+  try{
+    const d=await apiGet('/approvals?'+params.toString());if(!d.success)return;
+    renderApprovals(d.data.approvals);
+    renderPagination('approvalsPagination',d.data.pagination,loadApprovals);
+  }catch(e){showToast('Error loading approvals','error');}
+}
+
+function renderApprovals(approvals){
+  const tbody=document.getElementById('approvalsBody');
+  if(!approvals.length){
+    tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><h3>No approval requests</h3><p>'+(!currentStatus?'No approvals assigned to you yet':'No '+currentStatus+' approvals')+'</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML=approvals.map(a=>`<tr style="${parseFloat(a.pending_hours)>48&&a.status==='pending'?'background:var(--red-l)':''}" >
+    <td><div class="td-name">${a.rfq_title}</div><div class="td-muted">${a.product_category||''}</div></td>
+    <td><div style="font-size:13px">${a.requested_by_name||'—'}</div></td>
+    <td style="font-size:13px;font-weight:600;color:var(--ink)">${a.preferred_vendor||'—'}</td>
+    <td style="font-size:13px;font-weight:600">${a.expected_budget?formatCurrency(a.expected_budget):'—'}</td>
+    <td class="td-muted">${formatDate(a.requested_at)}</td>
+    <td>
+      ${a.status==='pending'?`<span style="font-size:13px;font-weight:700;color:${parseFloat(a.pending_hours)>48?'var(--red)':parseFloat(a.pending_hours)>24?'var(--orange)':'var(--ink)'}">${Math.round(parseFloat(a.pending_hours))||0}h</span>`:'<span class="td-muted">—</span>'}
+    </td>
+    <td>${priorityBadge(a.priority||'normal')}</td>
+    <td>${statusBadge(a.status)}</td>
+    <td><div class="td-actions">
+      <button class="btn btn-primary btn-sm" onclick="viewDetail('${a.id}')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Review
+      </button>
+      ${a.status==='pending'?`
+        <button class="btn btn-success btn-sm btn-icon" title="Approve" onclick="quickApprove('${a.id}','${a.rfq_title}')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
+        <button class="btn btn-danger btn-sm btn-icon" title="Reject" onclick="openReject('${a.id}')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>`:''}
+    </div></td>
+  </tr>`).join('');
+}
+
+async function viewDetail(id){
+  openModal('detailModal');
+  document.getElementById('detailBody').innerHTML='<div class="skeleton" style="height:300px;border-radius:10px"></div>';
+  document.getElementById('detailFooter').innerHTML='';
+  try{
+    const d=await apiGet('/approvals/'+id);if(!d.success){document.getElementById('detailBody').innerHTML='<p>Failed.</p>';return;}
+    const a=d.approval,quotes=d.quotations,hist=d.history;
+    document.getElementById('detailModalTitle').textContent=`Review: ${a.rfq_title}`;
+
+    let quotesHtml='<p style="color:var(--muted);font-size:13px">No quotations received yet</p>';
+    if(quotes.length){
+      const minAmt=Math.min(...quotes.map(q=>parseFloat(q.final_amount)||Infinity),Infinity);
+      quotesHtml=`<div class="vendor-compare-grid">${quotes.map(q=>{
+        const isRec=a.preferred_vendor_id&&q.vendor_id===a.preferred_vendor_id;
+        const isCheap=parseFloat(q.final_amount)===minAmt;
+        return`<div class="vendor-quote-card ${isRec?'recommended':''}">
+          ${isRec?'<span class="rec-label">⭐ Recommended by Officer</span>':''}
+          <div class="vendor-quote-name">${q.vendor_name}</div>
+          <div class="vendor-quote-amount ${isCheap?'cheapest':''}">${formatCurrency(q.final_amount)}</div>
+          <div class="vendor-quote-meta">
+            ${q.delivery_days?`<span>🚚 ${q.delivery_days} days delivery</span>`:''}
+            <span>📊 Response: ${q.response_rate||0}% · Approval: ${q.approval_rate||0}%</span>
+            ${q.remarks?`<span>💬 ${q.remarks}</span>`:''}
+          </div>
+          <span class="score-pill">Score: ${q.score||0}/100</span>
+        </div>`;}).join('')}</div>`;
+    }
+
+    document.getElementById('detailBody').innerHTML=`
+      <div class="detail-grid">
+        <div>
+          <div class="card section-gap">
+            <div class="card-header" style="padding:14px 16px">
+              <div><div class="card-title">${a.rfq_title}</div><div class="card-subtitle">${a.product_category||''}</div></div>
+              ${statusBadge(a.status)}
+            </div>
+            <div class="card-body">
+              <div class="form-grid" style="margin-bottom:16px">
+                <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px">BUDGET</div><div style="font-size:15px;font-weight:700;color:var(--ink)">${a.expected_budget?formatCurrency(a.expected_budget):'—'}</div></div>
+                <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px">DEADLINE</div><div style="font-size:14px;font-weight:600;color:${new Date(a.deadline)<new Date()?'var(--red)':'var(--ink)'}">${formatDate(a.deadline)}</div></div>
+                <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px">QUANTITY</div><div style="font-size:14px;font-weight:600">${a.quantity||'—'}</div></div>
+                <div><div style="font-size:11px;color:var(--muted);margin-bottom:3px">LOCATION</div><div style="font-size:13px;color:var(--ink-3)">${a.delivery_location||'—'}</div></div>
+                <div class="full"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">REQUESTED BY</div><div style="font-size:13px;font-weight:600">${a.requested_by_name} <span style="color:var(--muted)">(${a.company_name||''})</span></div></div>
+                ${a.preferred_vendor_name?`<div class="full"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">RECOMMENDED VENDOR</div><div style="font-size:14px;font-weight:700;color:var(--green)">⭐ ${a.preferred_vendor_name}</div></div>`:''}
+              </div>
+              ${a.description?`<div style="font-size:13px;color:var(--mid);padding:12px;background:var(--surface-2);border-radius:8px;margin-top:8px">${a.description}</div>`:''}
+            </div>
+          </div>
+          <div class="card section-gap">
+            <div class="card-header" style="padding:12px 16px"><div class="card-title">Vendor Quotations (${quotes.length})</div></div>
+            <div class="card-body">${quotesHtml}</div>
+          </div>
+        </div>
+        <div>
+          <div class="card section-gap">
+            <div class="card-header" style="padding:12px 16px"><div class="card-title">Approval History</div></div>
+            <div class="card-body">
+              ${hist.length?`<div class="timeline">${hist.map(h=>`
+                <div class="timeline-item">
+                  <span class="timeline-time">${timeAgo(h.performed_at)}</span>
+                  <div class="timeline-content">
+                    <span class="timeline-action">${h.action.toUpperCase()}</span>
+                    <div class="timeline-desc">${h.performed_by_name||'System'}${h.remarks?' — '+h.remarks:''}</div>
+                  </div>
+                </div>`).join('')}</div>`:'<p style="color:var(--muted);font-size:13px">No history yet</p>'}
+            </div>
+          </div>
+          ${d.activity&&d.activity.length?`<div class="card">
+            <div class="card-header" style="padding:12px 16px"><div class="card-title">Activity</div></div>
+            <div class="card-body"><div class="timeline">${d.activity.slice(0,8).map(ac=>`
+              <div class="timeline-item">
+                <span class="timeline-time">${timeAgo(ac.created_at)}</span>
+                <div class="timeline-content"><span class="timeline-action">${ac.action}</span><div class="timeline-desc">${ac.description}</div></div>
+              </div>`).join('')}</div></div>
+          </div>`:''}
+        </div>
+      </div>`;
+
+    if(a.status==='pending'){
+      document.getElementById('detailFooter').innerHTML=`
+        <button class="btn btn-outline" onclick="closeModal('detailModal')">Close</button>
+        <button class="btn btn-danger" onclick="openReject('${a.id}');closeModal('detailModal')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span class="btn-label">Reject</span>
+        </button>
+        <button class="btn btn-success" id="approveFromDetailBtn" onclick="quickApprove('${a.id}','${a.rfq_title}')">
+          <div class="btn-spinner"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          <span class="btn-label">Approve Request</span>
+        </button>`;
+    } else {
+      document.getElementById('detailFooter').innerHTML=`<button class="btn btn-outline" onclick="closeModal('detailModal')">Close</button>`;
+    }
+  }catch(e){document.getElementById('detailBody').innerHTML='<p>Error loading detail.</p>';}
+}
+
+async function quickApprove(id,title){
+  const ok=await showConfirm({title:'Approve Request',message:`Approve the procurement request for <strong>${title}</strong>?`,confirmText:'Approve',type:'success'});
+  if(!ok)return;
+  try{
+    const d=await apiPost('/approvals/'+id+'/approve',{});
+    if(d.success){showToast('Request approved! Officer notified.','success');closeAllModals();loadApprovals(currentPage);}
+    else showToast(d.message||'Failed','error');
+  }catch(e){showToast('Error','error');}
+}
+
+function openReject(id){
+  document.getElementById('rejectApprId').value=id;
+  document.getElementById('rejectRemarks').value='';
+  document.getElementById('rejectAlert').classList.remove('show');
+  openModal('rejectModal');
+}
+
+async function confirmReject(){
+  const id=document.getElementById('rejectApprId').value;
+  const remarks=document.getElementById('rejectRemarks').value.trim();
+  if(!remarks){
+    document.getElementById('rejectAlertMsg').textContent='Please provide a rejection reason.';
+    document.getElementById('rejectAlert').classList.add('show');return;
+  }
+  const btn=document.getElementById('confirmRejectBtn');
+  setLoading(btn,true);
+  try{
+    const d=await apiPost('/approvals/'+id+'/reject',{remarks});
+    if(d.success){closeModal('rejectModal');showToast('Request rejected. Officer notified.','warning');loadApprovals(currentPage);}
+    else{document.getElementById('rejectAlertMsg').textContent=d.message||'Failed.';document.getElementById('rejectAlert').classList.add('show');}
+  }catch(e){showToast('Error','error');}
+  setLoading(btn,false);
+}
+</script>
+</body></html>

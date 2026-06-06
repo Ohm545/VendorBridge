@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard — VendorBridge Manager</title>
+<link rel="stylesheet" href="/manager/manager.css"/></head>
+<body>
+<div class="admin-layout">
+  <div id="sidebarMount"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Manager Dashboard <span class="topbar-subtitle">Approval & Procurement Overview</span></div>
+      <div class="topbar-actions">
+        <a href="/manager/approvals" class="btn btn-primary btn-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Review Approvals
+        </a>
+        <a href="/manager/notifications" class="topbar-btn" style="position:relative">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </a>
+      </div>
+    </header>
+    <main class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Manager Dashboard</h1><p>Approval performance and procurement monitoring</p></div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Pending Approvals</span><div class="kpi-icon red"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value skeleton" id="kpi-pending" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Require your review</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Approved</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div><div class="kpi-value skeleton" id="kpi-approved" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Total approved</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Rejected</span><div class="kpi-icon orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div></div><div class="kpi-value skeleton" id="kpi-rejected" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Total rejected</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Avg Approval Time</span><div class="kpi-icon teal"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value skeleton" id="kpi-avgtime" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Hours per approval</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">High Value Pending</span><div class="kpi-icon purple"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="kpi-value skeleton" id="kpi-highval" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">&gt;₹10L requests</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Value Pending</span><div class="kpi-icon ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="kpi-value skeleton" id="kpi-totalval" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Awaiting review</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">High Priority</span><div class="kpi-icon red"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div></div><div class="kpi-value skeleton" id="kpi-hipri" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">High/urgent pending</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">SLA Compliance</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div></div><div class="kpi-value skeleton" id="kpi-sla" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Resolved within 48h</div></div>
+      </div>
+
+      <div class="two-col section-gap">
+        <!-- Trend Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Monthly Approval Trend</div><div class="card-subtitle">Last 12 months</div></div>
+            <div style="display:flex;gap:10px;font-size:11px;color:var(--mid)">
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:3px;background:var(--green);border-radius:2px;display:inline-block"></span>Approved</span>
+              <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:3px;background:var(--red);border-radius:2px;display:inline-block"></span>Rejected</span>
+            </div>
+          </div>
+          <div class="card-body"><div class="chart-wrap"><canvas id="trendChart" style="height:200px"></canvas></div></div>
+        </div>
+        <!-- Insights -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Smart Insights</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadInsights()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+          </div>
+          <div class="card-body"><div class="insights-list" id="insightsList">
+            <div class="skeleton" style="height:56px;border-radius:10px;margin-bottom:10px"></div>
+            <div class="skeleton" style="height:56px;border-radius:10px;margin-bottom:10px"></div>
+            <div class="skeleton" style="height:56px;border-radius:10px"></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Quick Actions</div></div>
+        <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <a href="/manager/approvals?status=pending" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:var(--red-l);border:1.5px solid #fecaca;border-radius:var(--radius-lg);text-align:center;text-decoration:none;transition:all .2s" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='#fecaca'">
+            <div style="width:40px;height:40px;background:var(--red-l);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <span style="font-size:13px;font-weight:700;color:var(--red)" id="qa-pending">0 Pending</span>
+            <span style="font-size:11.5px;color:var(--mid)">Review Now</span>
+          </a>
+          <a href="/manager/workflow" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:var(--accent-l);border:1.5px solid var(--accent-l2);border-radius:var(--radius-lg);text-align:center;text-decoration:none;transition:all .2s">
+            <div style="width:40px;height:40px;background:var(--accent-l);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" width="20" height="20"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <span style="font-size:13px;font-weight:700;color:var(--accent)">Workflow</span>
+            <span style="font-size:11.5px;color:var(--mid)">Monitor Pipeline</span>
+          </a>
+          <a href="/manager/analytics" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:var(--purple-l);border:1.5px solid #ddd6fe;border-radius:var(--radius-lg);text-align:center;text-decoration:none;transition:all .2s">
+            <div style="width:40px;height:40px;background:var(--purple-l);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" width="20" height="20"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+            <span style="font-size:13px;font-weight:700;color:var(--purple)">Analytics</span>
+            <span style="font-size:11.5px;color:var(--mid)">Performance</span>
+          </a>
+          <a href="/manager/reports" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:var(--green-l);border:1.5px solid #bbf7d0;border-radius:var(--radius-lg);text-align:center;text-decoration:none;transition:all .2s">
+            <div style="width:40px;height:40px;background:var(--green-l);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+            <span style="font-size:13px;font-weight:700;color:var(--green)">Reports</span>
+            <span style="font-size:11.5px;color:var(--mid)">Generate & Export</span>
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="/manager/manager.js"></script>
+<script>
+fetch('/manager/sidebar.html').then(r=>r.text()).then(h=>{document.getElementById('sidebarMount').innerHTML=h;initManagerPage('dashboard');loadDashboard();});
+async function loadDashboard(){ await Promise.all([loadStats(),loadInsights(),loadTrend()]); }
+async function loadStats(){
+  try{
+    const d=await apiGet('/dashboard/stats'); if(!d.success)return;
+    const s=d.data;
+    ['pending','approved','rejected','avgtime','highval','totalval','hipri','sla'].forEach(k=>{const el=document.getElementById('kpi-'+k);if(el)el.className='kpi-value';});
+    document.getElementById('kpi-pending').textContent=s.pending_approvals;
+    document.getElementById('kpi-approved').textContent=s.approved_requests;
+    document.getElementById('kpi-rejected').textContent=s.rejected_requests;
+    document.getElementById('kpi-avgtime').textContent=(s.avg_approval_hours||0)+'h';
+    document.getElementById('kpi-highval').textContent=s.high_value_pending;
+    document.getElementById('kpi-totalval').textContent=formatCurrency(s.total_value_pending);
+    document.getElementById('kpi-hipri').textContent=s.high_priority_pending;
+    document.getElementById('kpi-sla').textContent=s.sla_compliance_pct+'%';
+    const qa=document.getElementById('qa-pending');if(qa)qa.textContent=s.pending_approvals+' Pending';
+  }catch(e){}
+}
+async function loadInsights(){
+  try{
+    const d=await apiGet('/dashboard/insights');if(!d.success)return;
+    const ICONS={warning:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',error:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',success:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'};
+    document.getElementById('insightsList').innerHTML=d.insights.map(i=>`
+      <div class="insight-item"><div class="insight-icon ${i.type}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ICONS[i.type]||ICONS.info}</svg></div>
+      <span class="insight-text">${i.text}</span></div>`).join('');
+  }catch(e){}
+}
+async function loadTrend(){
+  try{
+    const d=await apiGet('/dashboard/monthly-trend');if(!d.success||!d.data.length)return;
+    const labels=d.data.map(r=>r.label);
+    const approved=d.data.map(r=>parseInt(r.approved));
+    const rejected=d.data.map(r=>parseInt(r.rejected));
+    drawBarChart('trendChart',labels,[{data:approved,color:'#16a34a'},{data:rejected,color:'#dc2626'}]);
+  }catch(e){}
+}
+</script>
+</body></html>

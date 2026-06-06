@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VendorBridge — Procurement & Vendor Management ERP</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="#" class="nav-logo">
+      <div class="logo-icon"><i data-lucide="package-2"></i></div>
+      <span>VendorBridge</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#workflow">Workflow</a></li>
+      <li><a href="#analytics">Analytics</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/pages/login.html" class="btn-ghost">Login</a>
+      <a href="/pages/signup.html" class="btn-primary-sm">Sign Up</a>
+    </div>
+    <button class="nav-hamburger" id="hamburger">
+      <i data-lucide="menu"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <ul>
+    <li><a href="#features" class="mob-link">Features</a></li>
+    <li><a href="#workflow" class="mob-link">Workflow</a></li>
+    <li><a href="#analytics" class="mob-link">Analytics</a></li>
+    <li><a href="#faq" class="mob-link">FAQ</a></li>
+    <li><a href="/pages/login.html" class="mob-link">Login</a></li>
+    <li><a href="/pages/signup.html" class="mob-cta">Sign Up</a></li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="container hero-inner">
+    <div class="hero-left">
+      <div class="hero-badge reveal-up">
+        <i data-lucide="layers"></i>
+        <span>Procurement &amp; Vendor Management ERP</span>
+      </div>
+      <h1 class="hero-headline reveal-up delay-1">
+        Procurement shouldn't be a spreadsheet problem.
+      </h1>
+      <p class="hero-sub reveal-up delay-2">
+        VendorBridge centralizes vendor management, RFQs, quotation comparison, approvals, purchase orders, invoicing and procurement analytics into one intelligent platform.
+      </p>
+      <blockquote class="hero-quote reveal-up delay-3">
+        <i data-lucide="quote"></i>
+        <p>"Great procurement isn't about finding the cheapest vendor. It's about making the smartest purchasing decision."</p>
+      </blockquote>
+      <div class="hero-ctas reveal-up delay-4">
+        <a href="/pages/signup.html" class="btn-primary">Start Free <i data-lucide="arrow-right"></i></a>
+        <a href="#workflow" class="btn-outline"><i data-lucide="play-circle"></i> Watch Demo</a>
+      </div>
+    </div>
+
+    <div class="hero-right reveal-right">
+      <!-- ERP Dashboard Mockup -->
+      <div class="erp-dashboard">
+        <div class="erp-topbar">
+          <div class="erp-topbar-left">
+            <span class="erp-dot red"></span>
+            <span class="erp-dot yellow"></span>
+            <span class="erp-dot green"></span>
+          </div>
+          <span class="erp-title-bar">VendorBridge — Dashboard</span>
+          <div class="erp-topbar-icons">
+            <i data-lucide="bell" style="width:14px;height:14px;"></i>
+            <i data-lucide="settings" style="width:14px;height:14px;"></i>
+          </div>
+        </div>
+        <div class="erp-body">
+          <div class="erp-sidebar">
+            <div class="erp-sidebar-item active"><i data-lucide="layout-dashboard"></i></div>
+            <div class="erp-sidebar-item"><i data-lucide="users"></i></div>
+            <div class="erp-sidebar-item"><i data-lucide="file-text"></i></div>
+            <div class="erp-sidebar-item"><i data-lucide="shopping-cart"></i></div>
+            <div class="erp-sidebar-item"><i data-lucide="receipt"></i></div>
+            <div class="erp-sidebar-item"><i data-lucide="bar-chart-2"></i></div>
+          </div>
+          <div class="erp-main">
+            <div class="erp-stats-row">
+              <div class="erp-stat-card">
+                <span class="erp-stat-label">Active RFQs</span>
+                <span class="erp-stat-val">47</span>
+                <span class="erp-stat-trend up"><i data-lucide="trending-up" style="width:10px;height:10px;"></i> +12%</span>
+              </div>
+              <div class="erp-stat-card">
+                <span class="erp-stat-label">Pending Approvals</span>
+                <span class="erp-stat-val">14</span>
+                <span class="erp-stat-trend warn"><i data-lucide="clock" style="width:10px;height:10px;"></i> Urgent</span>
+              </div>
+              <div class="erp-stat-card">
+                <span class="erp-stat-label">Purchase Orders</span>
+                <span class="erp-stat-val">132</span>
+                <span class="erp-stat-trend up"><i data-lucide="trending-up" style="width:10px;height:10px;"></i> +8%</span>
+              </div>
+            </div>
+            <div class="erp-table-section">
+              <div class="erp-table-header">
+                <span>Recent RFQs</span>
+                <span class="erp-table-badge">Live</span>
+              </div>
+              <div class="erp-table-row header">
+                <span>RFQ ID</span><span>Vendor</span><span>Status</span><span>Value</span>
+              </div>
+              <div class="erp-table-row">
+                <span class="id-tag">RFQ-2847</span><span>TechCorp Ltd</span><span class="status-tag open">Open</span><span>₹2.4L</span>
+              </div>
+              <div class="erp-table-row">
+                <span class="id-tag">RFQ-2846</span><span>Nexus Supply</span><span class="status-tag review">Review</span><span>₹5.1L</span>
+              </div>
+              <div class="erp-table-row">
+                <span class="id-tag">RFQ-2845</span><span>GlobalVend</span><span class="status-tag approved">Approved</span><span>₹1.8L</span>
+              </div>
+              <div class="erp-table-row">
+                <span class="id-tag">RFQ-2844</span><span>PrimeSup</span><span class="status-tag open">Open</span><span>₹3.7L</span>
+              </div>
+            </div>
+            <div class="erp-mini-chart">
+              <span class="erp-chart-label">Spend Trend</span>
+              <div class="erp-bars">
+                <div class="erp-bar" style="height:40%"><span>J</span></div>
+                <div class="erp-bar" style="height:65%"><span>F</span></div>
+                <div class="erp-bar" style="height:50%"><span>M</span></div>
+                <div class="erp-bar" style="height:80%"><span>A</span></div>
+                <div class="erp-bar active" style="height:70%"><span>M</span></div>
+                <div class="erp-bar" style="height:90%"><span>J</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating KPI Cards -->
+      <div class="kpi-card kpi-1 float-1">
+        <i data-lucide="file-search"></i>
+        <div>
+          <strong>47</strong>
+          <span>Active RFQs</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-2 float-2">
+        <i data-lucide="indian-rupee"></i>
+        <div>
+          <strong>₹18.2M</strong>
+          <span>Procurement Volume</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-3 float-3">
+        <i data-lucide="check-circle-2"></i>
+        <div>
+          <strong>92%</strong>
+          <span>Vendor Response Rate</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-4 float-1" style="animation-delay:1.2s;">
+        <i data-lucide="zap"></i>
+        <div>
+          <strong>68%</strong>
+          <span>Faster Approvals</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PROCUREMENT CHALLENGES
+═══════════════════════════════════════════ -->
+<section class="challenges section-gap" id="challenges">
+  <div class="container">
+    <div class="section-header reveal-up">
+      <p class="section-eyebrow">The Problem</p>
+      <h2>Most procurement processes are still broken.</h2>
+    </div>
+
+    <div class="challenge-cards">
+      <div class="challenge-card reveal-up delay-1">
+        <div class="challenge-icon"><i data-lucide="mail-x"></i></div>
+        <h3>Email Chaos</h3>
+        <p>Vendor communications buried in inboxes. No traceability. No central history. Everything scattered across threads.</p>
+      </div>
+      <div class="challenge-card reveal-up delay-2">
+        <div class="challenge-icon"><i data-lucide="network"></i></div>
+        <h3>Scattered Vendor Communication</h3>
+        <p>Multiple channels, no unified vendor portal. Responses arrive late, get missed, or require constant follow-ups.</p>
+      </div>
+      <div class="challenge-card reveal-up delay-3">
+        <div class="challenge-icon"><i data-lucide="table-2"></i></div>
+        <h3>Manual Quotation Comparison</h3>
+        <p>Spreadsheet-based comparisons that take hours. Human error is unavoidable. No standardized evaluation criteria.</p>
+      </div>
+      <div class="challenge-card reveal-up delay-4">
+        <div class="challenge-icon"><i data-lucide="git-pull-request"></i></div>
+        <h3>Approval Bottlenecks</h3>
+        <p>Approvals stall in inboxes. No escalation logic. No visibility into where a request stands. Deadlines slip.</p>
+      </div>
+    </div>
+
+    <div class="progress-section reveal-up">
+      <div class="progress-item">
+        <div class="progress-meta">
+          <span>Time lost in manual coordination</span>
+          <span class="prog-value" data-target="67">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" data-width="67"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-meta">
+          <span>Delayed approvals</span>
+          <span class="prog-value" data-target="58">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" data-width="58"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-meta">
+          <span>Fragmented vendor communication</span>
+          <span class="prog-value" data-target="72">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" data-width="72"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-meta">
+          <span>Visibility gaps in procurement</span>
+          <span class="prog-value" data-target="49">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" data-width="49"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════════ -->
+<section class="workflow section-gap" id="workflow">
+  <div class="container">
+    <div class="section-header reveal-up">
+      <p class="section-eyebrow">How It Works</p>
+      <h2>From RFQ to invoice in one flow.</h2>
+    </div>
+
+    <div class="steps-wrapper">
+      <div class="steps-line"></div>
+      <div class="steps-track">
+
+        <div class="step-item" data-step="1">
+          <div class="step-connector-line"></div>
+          <div class="step-bubble">
+            <i data-lucide="file-plus-2"></i>
+          </div>
+          <div class="step-content">
+            <span class="step-num">01</span>
+            <h4>Create RFQ</h4>
+            <p>Define specifications, deadlines and evaluation criteria for your procurement request.</p>
+          </div>
+        </div>
+
+        <div class="step-item" data-step="2">
+          <div class="step-connector-line"></div>
+          <div class="step-bubble">
+            <i data-lucide="user-plus"></i>
+          </div>
+          <div class="step-content">
+            <span class="step-num">02</span>
+            <h4>Assign Vendors</h4>
+            <p>Select from your approved vendor registry and notify them instantly via the portal.</p>
+          </div>
+        </div>
+
+        <div class="step-item" data-step="3">
+          <div class="step-connector-line"></div>
+          <div class="step-bubble">
+            <i data-lucide="inbox"></i>
+          </div>
+          <div class="step-content">
+            <span class="step-num">03</span>
+            <h4>Receive Quotations</h4>
+            <p>Vendors submit structured bids. All responses tracked, timestamped and centralized.</p>
+          </div>
+        </div>
+
+        <div class="step-item" data-step="4">
+          <div class="step-connector-line"></div>
+          <div class="step-bubble">
+            <i data-lucide="scale"></i>
+          </div>
+          <div class="step-content">
+            <span class="step-num">04</span>
+            <h4>Compare &amp; Analyze</h4>
+            <p>Side-by-side vendor comparison with AI-powered scoring across price, delivery and reliability.</p>
+          </div>
+        </div>
+
+        <div class="step-item" data-step="5">
+          <div class="step-connector-line"></div>
+          <div class="step-bubble">
+            <i data-lucide="shield-check"></i>
+          </div>
+          <div class="step-content">
+            <span class="step-num">05</span>
+            <h4>Approval Workflow</h4>
+            <p>Route to the right approvers automatically. Track status, escalate on delay.</p>
+          </div>
+        </div>
+
+        <div class="step-item" data-step="6">
+          <div class="step-bubble">
+            <i data-lucide="file-check-2"></i>
+          </div>
+          <div class="step-content">
+            <span class="step-num">06</span>
+            <h4>Generate PO &amp; Invoice</h4>
+            <p>Auto-generate purchase orders and invoices. Sync with finance in one click.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FEATURE SHOWCASE
+═══════════════════════════════════════════ -->
+<section class="features section-gap" id="features">
+  <div class="container">
+    <div class="section-header reveal-up">
+      <p class="section-eyebrow">Platform Features</p>
+      <h2>Every procurement tool in one place.</h2>
+    </div>
+
+    <!-- Feature 1 -->
+    <div class="feature-row reveal-feature">
+      <div class="feature-visual">
+        <div class="feat-mockup">
+          <img class="lazyload reveal-up" loading="lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="1.png" alt="Feature 1 image" />
+        </div>
+      </div>
+      <div class="feature-content">
+        <span class="feat-tag"><i data-lucide="users"></i> Vendor Management</span>
+        <h3>A single source of truth for every vendor relationship.</h3>
+        <p>Maintain a complete vendor registry with performance scores, compliance status, contact history, and tier classification. Never lose track of who you're working with.</p>
+        <ul class="feat-list">
+          <li><i data-lucide="check"></i> Vendor onboarding workflows</li>
+          <li><i data-lucide="check"></i> Performance scoring &amp; KPIs</li>
+          <li><i data-lucide="check"></i> Document &amp; compliance tracking</li>
+          <li><i data-lucide="check"></i> Tier &amp; category classification</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="feature-row reverse reveal-feature">
+      <div class="feature-visual">
+        <div class="feat-mockup">
+          <img class="lazyload reveal-up" loading="lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="2.png" alt="Feature 2 image" />
+        </div>
+      </div>
+      <div class="feature-content">
+        <span class="feat-tag"><i data-lucide="file-text"></i> RFQ Creation</span>
+        <h3>Create structured RFQs in under two minutes.</h3>
+        <p>Build detailed procurement requests with item specifications, quantity requirements, evaluation criteria, and deadlines. Assign vendors and send instantly.</p>
+        <ul class="feat-list">
+          <li><i data-lucide="check"></i> Customizable RFQ templates</li>
+          <li><i data-lucide="check"></i> Multi-vendor assignment</li>
+          <li><i data-lucide="check"></i> Deadline &amp; reminder automation</li>
+          <li><i data-lucide="check"></i> Item-level specifications</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="feature-row reveal-feature">
+      <div class="feature-visual">
+        <div class="feat-mockup">
+          <img class="lazyload reveal-up" loading="lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="3.png" alt="Feature 3 image" />
+        </div>
+      </div>
+      <div class="feature-content">
+        <span class="feat-tag"><i data-lucide="scale"></i> Quotation Comparison</span>
+        <h3>Stop comparing quotations in spreadsheets.</h3>
+        <p>Evaluate vendor bids side-by-side across price, delivery, quality, and compliance. Weighted scoring surfaces the best choice automatically.</p>
+        <ul class="feat-list">
+          <li><i data-lucide="check"></i> Side-by-side bid matrix</li>
+          <li><i data-lucide="check"></i> Weighted evaluation criteria</li>
+          <li><i data-lucide="check"></i> AI-assisted recommendations</li>
+          <li><i data-lucide="check"></i> Audit trail on selections</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 4 -->
+    <div class="feature-row reverse reveal-feature">
+      <div class="feature-visual">
+        <div class="feat-mockup">
+          <img class="lazyload reveal-up" loading="lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" data-src="4.png" alt="Feature 4 image" />
+        </div>
+      </div>
+      <div class="feature-content">
+        <span class="feat-tag"><i data-lucide="shield-check"></i> Approval Workflow</span>
+        <h3>Approvals that actually move at the speed of business.</h3>
+        <p>Define multi-level approval chains with role-based routing, auto-escalation, and full auditability. No more chasing approvers over email.</p>
+        <ul class="feat-list">
+          <li><i data-lucide="check"></i> Multi-level approval chains</li>
+          <li><i data-lucide="check"></i> Auto-escalation on delay</li>
+          <li><i data-lucide="check"></i> Real-time status tracking</li>
+          <li><i data-lucide="check"></i> Complete approval audit trail</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 5 & 6 side-by-side mini -->
+    <div class="feature-mini-row">
+      <div class="feature-mini-card reveal-up delay-1">
+        <div class="mini-icon"><i data-lucide="shopping-cart"></i></div>
+        <h4>Purchase Orders</h4>
+        <p>Auto-generate POs from approved quotations. Number, track, and share them with vendors instantly.</p>
+        <div class="mini-mockup">
+          <div class="po-line"><span>PO-10482</span><span>TechCorp Ltd</span><span class="po-amt">₹2.4L</span></div>
+          <div class="po-line"><span>PO-10481</span><span>Nexus Supply</span><span class="po-amt">₹5.1L</span></div>
+          <div class="po-line"><span>PO-10480</span><span>GlobalVend</span><span class="po-amt">₹1.8L</span></div>
+        </div>
+      </div>
+      <div class="feature-mini-card reveal-up delay-2">
+        <div class="mini-icon"><i data-lucide="receipt"></i></div>
+        <h4>Invoice Generation</h4>
+        <p>Generate, send, and track invoices linked to purchase orders. Full reconciliation built-in.</p>
+        <div class="mini-mockup">
+          <div class="inv-header">
+            <span>INV-2024-0847</span>
+            <span class="inv-status paid">Paid</span>
+          </div>
+          <div class="inv-row"><span>Items Total</span><span>₹4,80,000</span></div>
+          <div class="inv-row"><span>GST (18%)</span><span>₹86,400</span></div>
+          <div class="inv-row bold"><span>Grand Total</span><span>₹5,66,400</span></div>
+        </div>
+      </div>
+      <div class="feature-mini-card reveal-up delay-3">
+        <div class="mini-icon"><i data-lucide="activity"></i></div>
+        <h4>Activity Logs</h4>
+        <p>Every action logged with timestamp, user, and context. Full procurement audit trail always available.</p>
+        <div class="mini-mockup">
+          <div class="log-row"><span class="log-dot green"></span><span>RFQ-2847 created by Raj</span></div>
+          <div class="log-row"><span class="log-dot blue"></span><span>Vendor response received</span></div>
+          <div class="log-row"><span class="log-dot orange"></span><span>Approval escalated</span></div>
+          <div class="log-row"><span class="log-dot green"></span><span>PO-10482 generated</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     AI PROCUREMENT INSIGHTS
+═══════════════════════════════════════════ -->
+<section class="ai-section section-gap" id="ai">
+  <div class="container">
+    <div class="section-header reveal-up">
+      <p class="section-eyebrow">AI Insights</p>
+      <h2>Let intelligence guide your vendor selection.</h2>
+    </div>
+
+    <div class="ai-wrapper">
+      <div class="ai-quotes-panel reveal-up delay-1">
+        <p class="ai-panel-label">Quotation Comparison — RFQ-2847</p>
+        <div class="ai-vendor-cards">
+          <div class="ai-vendor-card">
+            <div class="ai-vendor-top">
+              <span class="av-name">Vendor A</span>
+              <span class="av-score">Score: 78</span>
+            </div>
+            <div class="av-price">₹95,000</div>
+            <div class="av-bars">
+              <div class="av-bar-row"><span>Price</span><div class="av-bar-track"><div class="av-bar-fill" style="width:72%"></div></div></div>
+              <div class="av-bar-row"><span>Delivery</span><div class="av-bar-track"><div class="av-bar-fill" style="width:60%"></div></div></div>
+              <div class="av-bar-row"><span>Quality</span><div class="av-bar-track"><div class="av-bar-fill" style="width:80%"></div></div></div>
+            </div>
+          </div>
+          <div class="ai-vendor-card recommended">
+            <div class="rec-badge"><i data-lucide="sparkles" style="width:10px;height:10px;"></i> Recommended</div>
+            <div class="ai-vendor-top">
+              <span class="av-name">Vendor B</span>
+              <span class="av-score best">Score: 94</span>
+            </div>
+            <div class="av-price best">₹89,000</div>
+            <div class="av-bars">
+              <div class="av-bar-row"><span>Price</span><div class="av-bar-track"><div class="av-bar-fill best" style="width:94%"></div></div></div>
+              <div class="av-bar-row"><span>Delivery</span><div class="av-bar-track"><div class="av-bar-fill best" style="width:90%"></div></div></div>
+              <div class="av-bar-row"><span>Quality</span><div class="av-bar-track"><div class="av-bar-fill best" style="width:95%"></div></div></div>
+            </div>
+          </div>
+          <div class="ai-vendor-card">
+            <div class="ai-vendor-top">
+              <span class="av-name">Vendor C</span>
+              <span class="av-score">Score: 82</span>
+            </div>
+            <div class="av-price">₹92,000</div>
+            <div class="av-bars">
+              <div class="av-bar-row"><span>Price</span><div class="av-bar-track"><div class="av-bar-fill" style="width:80%"></div></div></div>
+              <div class="av-bar-row"><span>Delivery</span><div class="av-bar-track"><div class="av-bar-fill" style="width:75%"></div></div></div>
+              <div class="av-bar-row"><span>Quality</span><div class="av-bar-track"><div class="av-bar-fill" style="width:85%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-recommendation-panel reveal-up delay-2">
+        <div class="ai-rec-header">
+          <div class="ai-rec-icon"><i data-lucide="brain-circuit"></i></div>
+          <div>
+            <p class="ai-rec-label">AI Procurement Advisor</p>
+            <p class="ai-rec-sub">Analysis complete</p>
+          </div>
+        </div>
+        <div class="ai-rec-result">
+          <p class="ai-rec-verdict">Recommended Vendor</p>
+          <h3 class="ai-rec-winner">Vendor B</h3>
+          <p class="ai-rec-price">₹89,000 — Best total value</p>
+        </div>
+        <div class="ai-reasons">
+          <div class="ai-reason">
+            <i data-lucide="indian-rupee"></i>
+            <div>
+              <strong>Lowest Total Cost</strong>
+              <span>₹6,000 cheaper than Vendor A</span>
+            </div>
+          </div>
+          <div class="ai-reason">
+            <i data-lucide="truck"></i>
+            <div>
+              <strong>Fastest Delivery</strong>
+              <span>7 days vs 12-day industry avg</span>
+            </div>
+          </div>
+          <div class="ai-reason">
+            <i data-lucide="star"></i>
+            <div>
+              <strong>Highest Vendor Score</strong>
+              <span>94/100 composite rating</span>
+            </div>
+          </div>
+          <div class="ai-reason">
+            <i data-lucide="trending-up"></i>
+            <div>
+              <strong>Best Long-term Value</strong>
+              <span>3-year performance track record</span>
+            </div>
+          </div>
+        </div>
+        <button class="ai-approve-btn">
+          <i data-lucide="check-circle-2"></i>
+          Approve &amp; Generate PO
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     ROLE BASED ACCESS
+═══════════════════════════════════════════ -->
+<section class="roles section-gap" id="roles">
+  <div class="container">
+    <div class="section-header reveal-up">
+      <p class="section-eyebrow">Role-Based Access</p>
+      <h2>The right tools for every stakeholder.</h2>
+    </div>
+
+    <div class="roles-grid">
+      <div class="role-card reveal-up delay-1">
+        <div class="role-icon admin"><i data-lucide="crown"></i></div>
+        <h3>Admin</h3>
+        <p>Full platform control. Configure workflows, manage users, set approval hierarchies.</p>
+        <ul class="role-perms">
+          <li><i data-lucide="check"></i> Full system configuration</li>
+          <li><i data-lucide="check"></i> User &amp; role management</li>
+          <li><i data-lucide="check"></i> Audit log access</li>
+          <li><i data-lucide="check"></i> Platform analytics</li>
+          <li><i data-lucide="check"></i> Workflow builder</li>
+        </ul>
+      </div>
+      <div class="role-card reveal-up delay-2">
+        <div class="role-icon officer"><i data-lucide="briefcase"></i></div>
+        <h3>Procurement Officer</h3>
+        <p>Creates RFQs, manages vendors, compares quotations, initiates purchase orders.</p>
+        <ul class="role-perms">
+          <li><i data-lucide="check"></i> Create &amp; manage RFQs</li>
+          <li><i data-lucide="check"></i> Quotation comparison</li>
+          <li><i data-lucide="check"></i> Vendor communication</li>
+          <li><i data-lucide="check"></i> PO initiation</li>
+          <li><i data-lucide="check"></i> Invoice tracking</li>
+        </ul>
+      </div>
+      <div class="role-card reveal-up delay-3">
+        <div class="role-icon manager"><i data-lucide="user-cog"></i></div>
+        <h3>Manager</h3>
+        <p>Reviews procurement requests, approves or rejects, monitors team spend.</p>
+        <ul class="role-perms">
+          <li><i data-lucide="check"></i> Approval authority</li>
+          <li><i data-lucide="check"></i> Budget oversight</li>
+          <li><i data-lucide="check"></i> Team activity view</li>
+          <li><i data-lucide="check"></i> Escalation management</li>
+          <li><i data-lucide="check"></i> Reports &amp; analytics</li>
+        </ul>
+      </div>
+      <div class="role-card reveal-up delay-4">
+        <div class="role-icon vendor"><i data-lucide="store"></i></div>
+        <h3>Vendor</h3>
+        <p>Receives RFQs, submits quotations, tracks order status, manages invoices.</p>
+        <ul class="role-perms">
+          <li><i data-lucide="check"></i> RFQ notifications</li>
+          <li><i data-lucide="check"></i> Quotation submission</li>
+          <li><i data-lucide="check"></i> Order tracking</li>
+          <li><i data-lucide="check"></i> Invoice portal</li>
+          <li><i data-lucide="check"></i> Communication thread</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     ANALYTICS DASHBOARD
+═══════════════════════════════════════════ -->
+<section class="analytics section-gap" id="analytics">
+  <div class="container">
+    <div class="section-header reveal-up">
+      <p class="section-eyebrow">Analytics</p>
+      <h2>Complete visibility into your procurement operations.</h2>
+    </div>
+
+    <div class="analytics-grid">
+      <!-- Spend Trend Chart -->
+      <div class="analytics-card large reveal-up delay-1">
+        <div class="analytics-card-header">
+          <div>
+            <h4>Procurement Spend Trend</h4>
+            <p>Monthly procurement volume — FY 2025</p>
+          </div>
+          <select class="analytics-select">
+            <option>This Year</option>
+          </select>
+        </div>
+        <div class="line-chart-wrap">
+          <canvas id="spendChart" width="500" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Vendor Performance -->
+      <div class="analytics-card reveal-up delay-2">
+        <div class="analytics-card-header">
+          <h4>Top Vendors</h4>
+        </div>
+        <div class="vendor-perf-list">
+          <div class="vp-row">
+            <span class="vp-name">TechCorp Ltd</span>
+            <div class="vp-bar-wrap"><div class="vp-bar" data-w="94"></div></div>
+            <span class="vp-score">94</span>
+          </div>
+          <div class="vp-row">
+            <span class="vp-name">GlobalVend</span>
+            <div class="vp-bar-wrap"><div class="vp-bar" data-w="88"></div></div>
+            <span class="vp-score">88</span>
+          </div>
+          <div class="vp-row">
+            <span class="vp-name">Nexus Supply</span>
+            <div class="vp-bar-wrap"><div class="vp-bar" data-w="81"></div></div>
+            <span class="vp-score">81</span>
+          </div>
+          <div class="vp-row">
+            <span class="vp-name">PrimeSup Co.</span>
+            <div class="vp-bar-wrap"><div class="vp-bar" data-w="74"></div></div>
+            <span class="vp-score">74</span>
+          </div>
+          <div class="vp-row">
+            <span class="vp-name">SwiftMate</span>
+            <div class="vp-bar-wrap"><div class="vp-bar" data-w="68"></div></div>
+            <span class="vp-score">68</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spending by Category -->
+      <div class="analytics-card reveal-up delay-3">
+        <div class="analytics-card-header">
+          <h4>Spend by Category</h4>
+        </div>
+        <div class="donut-wrap">
+          <canvas id="donutChart" width="160" height="160"></canvas>
+          <div class="donut-legend">
+            <div class="dl-row"><span class="dl-dot" style="background:#0f172a;"></span><span>Electronics</span><strong>34%</strong></div>
+            <div class="dl-row"><span class="dl-dot" style="background:#2563eb;"></span><span>Raw Mat.</span><strong>28%</strong></div>
+            <div class="dl-row"><span class="dl-dot" style="background:#64748b;"></span><span>Logistics</span><strong>22%</strong></div>
+            <div class="dl-row"><span class="dl-dot" style="background:#cbd5e1;"></span><span>Office</span><strong>16%</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Approval Turnaround -->
+      <div class="analytics-card reveal-up delay-1">
+        <div class="analytics-card-header">
+          <h4>Approval Turnaround</h4>
+        </div>
+        <div class="turnaround-list">
+          <div class="ta-row">
+            <span>Procurement Officer</span>
+            <div class="ta-bar-wrap"><div class="ta-bar" style="width:30%"></div></div>
+            <span>1.2h</span>
+          </div>
+          <div class="ta-row">
+            <span>Dept. Manager</span>
+            <div class="ta-bar-wrap"><div class="ta-bar" style="width:55%"></div></div>
+            <span>2.8h</span>
+          </div>
+          <div class="ta-row">
+            <span>Finance Head</span>
+            <div class="ta-bar-wrap"><div class="ta-bar" style="width:75%"></div></div>
+            <span>4.1h</span>
+          </div>
+          <div class="ta-row">
+            <span>C-Suite</span>
+            <div class="ta-bar-wrap"><div class="ta-bar" style="width:45%"></div></div>
+            <span>2.4h</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     BUSINESS IMPACT
+═══════════════════════════════════════════ -->
+<section class="impact section-gap" id="impact">
+  <div class="container">
+    <div class="section-header reveal-up">
+      <p class="section-eyebrow">Business Impact</p>
+      <h2>Numbers that speak for themselves.</h2>
+    </div>
+    <div class="impact-grid">
+      <div class="impact-card reveal-up delay-1">
+        <div class="impact-icon"><i data-lucide="eye"></i></div>
+        <div class="impact-num" data-target="98">0</div>
+        <div class="impact-unit">%</div>
+        <p>Procurement Visibility</p>
+      </div>
+      <div class="impact-card reveal-up delay-2">
+        <div class="impact-icon"><i data-lucide="zap"></i></div>
+        <div class="impact-num" data-target="3">0</div>
+        <div class="impact-unit">x</div>
+        <p>Faster RFQ Processing</p>
+      </div>
+      <div class="impact-card reveal-up delay-3">
+        <div class="impact-icon"><i data-lucide="clock-3"></i></div>
+        <div class="impact-num" data-target="62">0</div>
+        <div class="impact-unit">%</div>
+        <p>Faster Approvals</p>
+      </div>
+      <div class="impact-card reveal-up delay-4">
+        <div class="impact-icon"><i data-lucide="minimize-2"></i></div>
+        <div class="impact-num" data-target="40">0</div>
+        <div class="impact-unit">%</div>
+        <p>Reduced Admin Work</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FAQ
+═══════════════════════════════════════════ -->
+<section class="faq section-gap" id="faq">
+  <div class="container faq-container">
+    <div class="section-header reveal-up">
+      <p class="section-eyebrow">FAQ</p>
+      <h2>Everything you need to know.</h2>
+    </div>
+
+    <div class="faq-list reveal-up delay-1">
+      <div class="faq-item">
+        <button class="faq-q">
+          <span>What is VendorBridge and who is it for?</span>
+          <i data-lucide="plus"></i>
+        </button>
+        <div class="faq-a">
+          <p>VendorBridge is a cloud-based procurement and vendor management ERP designed for mid-size to enterprise organizations. It's built for procurement officers, finance teams, operations managers, and vendors who need a unified platform to streamline purchasing workflows, vendor relationships, and financial reconciliation.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          <span>How does the RFQ and quotation workflow work?</span>
+          <i data-lucide="plus"></i>
+        </button>
+        <div class="faq-a">
+          <p>Procurement officers create structured RFQs with specifications, deadlines, and evaluation criteria. Assigned vendors receive a notification and submit their quotations through the vendor portal. VendorBridge then compiles all responses into a side-by-side comparison matrix — helping your team evaluate bids objectively and quickly.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          <span>Can we customize the approval workflow for our organization?</span>
+          <i data-lucide="plus"></i>
+        </button>
+        <div class="faq-a">
+          <p>Absolutely. VendorBridge includes a no-code workflow builder where admins can define multi-level approval chains, set budget thresholds for different approval tiers, assign approvers by role or individual, and configure auto-escalation rules when approvals are delayed beyond a set time window.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          <span>Does VendorBridge integrate with existing finance or ERP systems?</span>
+          <i data-lucide="plus"></i>
+        </button>
+        <div class="faq-a">
+          <p>Yes. VendorBridge offers native integrations with popular accounting and ERP systems including Tally, SAP, QuickBooks, and Zoho Books. We also provide a REST API for custom integrations with your internal systems, HRMS platforms, or enterprise data warehouses.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          <span>How does role-based access control work?</span>
+          <i data-lucide="plus"></i>
+        </button>
+        <div class="faq-a">
+          <p>VendorBridge has four default roles — Admin, Procurement Officer, Manager, and Vendor — each with scoped permissions. Admins can create custom roles, restrict module access per role, and configure field-level visibility. Every user only sees what they need, keeping sensitive procurement data secure.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          <span>Is vendor data and financial information secure?</span>
+          <i data-lucide="plus"></i>
+        </button>
+        <div class="faq-a">
+          <p>VendorBridge uses AES-256 encryption for data at rest, TLS 1.3 for data in transit, and hosts on ISO 27001-certified infrastructure. We maintain SOC 2 Type II compliance, conduct regular penetration testing, and support SSO via SAML 2.0 for enterprise customers.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          <span>What does AI-powered quotation recommendation mean?</span>
+          <i data-lucide="plus"></i>
+        </button>
+        <div class="faq-a">
+          <p>Our AI engine analyzes each vendor's bid across configurable criteria — price, delivery time, quality score, compliance status, and past performance — and applies weighted scoring to surface the best-fit recommendation. It explains its reasoning transparently, so procurement teams make informed decisions rather than just following a black-box output.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          <span>Can vendors use VendorBridge without being onboarded to our company system?</span>
+          <i data-lucide="plus"></i>
+        </button>
+        <div class="faq-a">
+          <p>Vendors receive a dedicated portal link when assigned to an RFQ. They can submit quotations, track order status, and manage invoices without needing a full platform account. For recurring vendors, full onboarding unlocks a persistent vendor dashboard with communication history, document storage, and performance analytics.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FINAL CTA
+═══════════════════════════════════════════ -->
+<section class="final-cta section-gap" id="cta">
+  <div class="container">
+    <div class="cta-box reveal-up">
+      <div class="cta-badge"><i data-lucide="sparkles"></i> Modern Procurement</div>
+      <h2>Modern procurement<br>starts here.</h2>
+      <p>Manage vendors, RFQs, approvals, purchase orders, invoices and analytics from one platform.</p>
+      <div class="cta-btns">
+        <a href="#" class="btn-primary">Start Free <i data-lucide="arrow-right"></i></a>
+        <a href="#" class="btn-outline-dark"><i data-lucide="calendar"></i> Book Demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo footer-logo">
+          <div class="logo-icon"><i data-lucide="package-2"></i></div>
+          <span>VendorBridge</span>
+        </a>
+        <p>The modern procurement platform for forward-thinking enterprise teams.</p>
+        <div class="footer-socials">
+          <a href="#"><i data-lucide="twitter"></i></a>
+          <a href="#"><i data-lucide="linkedin"></i></a>
+          <a href="#"><i data-lucide="github"></i></a>
+          <a href="#"><i data-lucide="youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#">Features</a></li>
+          <li><a href="#">Workflow</a></li>
+          <li><a href="#">Analytics</a></li>
+          <li><a href="#">Integrations</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Customers</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Press</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">API Reference</a></li>
+          <li><a href="#">Support Center</a></li>
+          <li><a href="#">Community</a></li>
+          <li><a href="#">Status</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+          <li><a href="#">Security</a></li>
+          <li><a href="#">Compliance</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 VendorBridge Technologies Pvt. Ltd. All rights reserved.</span>
+      <span>Made for enterprise procurement teams.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

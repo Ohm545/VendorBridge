@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Performance — VendorBridge Vendor</title><link rel="stylesheet" href="/vendor/vendor.css"/></head>
+<body><div class="admin-layout"><div id="sidebarMount"></div><div class="main-content">
+<header class="topbar"><button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+<div class="topbar-title">Performance <span class="topbar-subtitle">Your supplier scorecard</span></div>
+<div class="topbar-actions"><a href="/vendor/notifications" class="topbar-btn" style="position:relative"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-dot" id="notifDot" style="display:none"></span></a></div></header>
+<main class="page-body">
+<div class="page-header"><div class="page-header-left"><h1>Performance</h1><p>Your supplier scorecard and analytics</p></div></div>
+
+<div class="two-col section-gap">
+  <!-- Score Card -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">Overall Performance Score</div></div>
+    <div class="card-body" style="text-align:center">
+      <div class="score-circle" id="scoreCircle"><div class="score-num" id="scoreNum">—</div><div class="score-lbl">/ 100</div></div>
+      <div id="scoreGrade" style="font-size:16px;font-weight:700;margin-bottom:16px;color:var(--mid)">Loading...</div>
+      <div style="display:flex;flex-direction:column;gap:10px" id="scoreBreakdown">
+        <div class="skeleton" style="height:36px;border-radius:8px"></div>
+        <div class="skeleton" style="height:36px;border-radius:8px"></div>
+        <div class="skeleton" style="height:36px;border-radius:8px"></div>
+      </div>
+    </div>
+  </div>
+  <!-- KPIs -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">Performance KPIs</div></div>
+    <div class="card-body" id="kpiList"><div class="skeleton" style="height:200px;border-radius:8px"></div></div>
+  </div>
+</div>
+
+<!-- Monthly Chart -->
+<div class="card section-gap">
+  <div class="card-header"><div class="card-title">Monthly Activity</div><div class="card-subtitle">RFQs, Quotations & POs</div></div>
+  <div class="card-body"><div class="chart-wrap"><canvas id="perfChart" style="height:200px"></canvas></div>
+    <div style="display:flex;gap:20px;justify-content:center;margin-top:10px;font-size:12px;color:var(--mid)">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:4px;background:#0891b2;border-radius:2px;display:inline-block"></span>RFQs</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:4px;background:#16a34a;border-radius:2px;display:inline-block"></span>Quotes</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:4px;background:#d97706;border-radius:2px;display:inline-block"></span>POs</span>
+    </div>
+  </div>
+</div>
+</main></div></div>
+<script src="/vendor/vendor.js"></script>
+<script>
+fetch('/vendor/sidebar.html').then(r=>r.text()).then(h=>{document.getElementById('sidebarMount').innerHTML=h;initVendorPage('performance');loadPerformance();});
+async function loadPerformance(){
+  try{const d=await apiGet('/performance');if(!d.success)return;const{kpis,monthly,score,score_breakdown}=d.data;
+  // Score
+  document.getElementById('scoreNum').textContent=score;
+  const grades=[{min:90,grade:'Excellent',color:'var(--green)'},{min:75,grade:'Good',color:'#16a34a'},{min:60,grade:'Average',color:'var(--orange)'},{min:0,grade:'Needs Improvement',color:'var(--red)'}];
+  const g=grades.find(x=>score>=x.min)||grades[grades.length-1];
+  document.getElementById('scoreGrade').textContent=g.grade;document.getElementById('scoreGrade').style.color=g.color;
+  document.getElementById('scoreCircle').style.borderColor=g.color;document.getElementById('scoreCircle').style.background=g.color+'1a';document.getElementById('scoreNum').style.color=g.color;
+
+  document.getElementById('scoreBreakdown').innerHTML=`
+    <div style="padding:10px 12px;background:var(--surface-2);border-radius:8px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="font-weight:600">Response Rate</span><span style="font-weight:700;color:var(--vendor)">${score_breakdown.response}/40</span></div><div class="progress-track"><div class="progress-fill" style="width:${(score_breakdown.response/40)*100}%;background:var(--vendor)"></div></div></div>
+    <div style="padding:10px 12px;background:var(--surface-2);border-radius:8px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="font-weight:600">Approval Success</span><span style="font-weight:700;color:var(--green)">${score_breakdown.approval}/40</span></div><div class="progress-track"><div class="progress-fill" style="width:${(score_breakdown.approval/40)*100}%;background:var(--green)"></div></div></div>
+    <div style="padding:10px 12px;background:var(--surface-2);border-radius:8px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="font-weight:600">Response Speed</span><span style="font-weight:700;color:var(--orange)">${score_breakdown.speed}/20</span></div><div class="progress-track"><div class="progress-fill" style="width:${(score_breakdown.speed/20)*100}%;background:var(--orange)"></div></div></div>`;
+
+  // KPIs
+  document.getElementById('kpiList').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      ${[['Assigned RFQs',kpis.assigned,'blue'],['Submitted Quotes',kpis.submitted,'teal'],['Won (Approved)',kpis.won,'green'],['Lost (Rejected)',kpis.lost,'red'],['Purchase Orders',kpis.purchase_orders,'ink'],['Avg Response',`${kpis.avg_days||0} days`,'orange'],['Response Rate',`${kpis.response_rate||0}%`,'teal'],['Success Rate',`${kpis.success_rate||0}%`,'green']].map(([label,val,color])=>`
+      <div style="padding:14px;background:var(--surface-2);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:20px;font-weight:800;color:var(--${color})">${val}</div>
+        <div style="font-size:12px;color:var(--muted);font-weight:500;margin-top:2px">${label}</div>
+      </div>`).join('')}
+    </div>`;
+
+  // Chart
+  if(monthly.length) drawBarChart('perfChart',monthly.map(r=>r.label),[{data:monthly.map(r=>parseInt(r.rfqs)),color:'#0891b2'},{data:monthly.map(r=>parseInt(r.quotes)),color:'#16a34a'},{data:monthly.map(r=>parseInt(r.pos)),color:'#d97706'}]);
+  }catch(e){console.error(e);}
+}
+</script></body></html>

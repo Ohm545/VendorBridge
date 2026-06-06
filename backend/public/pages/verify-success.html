@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Email Verified — VendorBridge</title>
+  <link rel="stylesheet" href="auth.css"/>
+</head>
+<body class="auth-page">
+  <nav class="auth-nav">
+    <a href="../index.html" class="auth-nav-logo">
+      <div class="auth-nav-logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      </div>
+      VendorBridge
+    </a>
+  </nav>
+
+  <div class="status-page">
+    <div class="status-card">
+      <div class="status-icon success">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h2>Email verified successfully.</h2>
+      <p>Your email has been verified and your VendorBridge account is now active. You can now sign in and start managing your procurement operations.</p>
+      <a href="login.html" class="btn-auth" style="display:inline-flex; max-width:200px; margin: 0 auto;">
+        <span class="btn-text">Go to Sign In</span>
+      </a>
+      <p style="margin-top: 16px; font-size: 13px; color: var(--muted);">You will be redirected automatically in <span id="countdown">5</span>s</p>
+    </div>
+  </div>
+
+  <script>
+    let count = 5;
+    const el = document.getElementById('countdown');
+    const timer = setInterval(() => {
+      count--;
+      if (el) el.textContent = count;
+      if (count <= 0) { clearInterval(timer); window.location.href = 'login.html'; }
+    }, 1000);
+  </script>
+</body>
+</html>

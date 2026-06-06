@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard — VendorBridge Procurement</title>
+<link rel="stylesheet" href="/procurement/procurement.css"/></head>
+<body>
+<div class="admin-layout">
+  <div id="sidebarMount"></div>
+  <div class="main-content">
+    <header class="topbar">
+      <button class="topbar-btn topbar-hamburger" id="hamburger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="topbar-title">Dashboard <span class="topbar-subtitle">My Procurement Overview</span></div>
+      <div class="topbar-actions">
+        <a href="rfqs.html" class="btn btn-primary btn-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New RFQ
+        </a>
+        <a href="notifications.html" class="topbar-btn" style="position:relative">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot" id="notifDot" style="display:none"></span>
+        </a>
+      </div>
+    </header>
+    <main class="page-body">
+      <div class="page-header">
+        <div class="page-header-left"><h1>Procurement Dashboard</h1><p>Your procurement activity at a glance</p></div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Active RFQs</span><div class="kpi-icon orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div></div><div class="kpi-value skeleton" id="kpi-active" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">In progress</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Open RFQs</span><div class="kpi-icon blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div><div class="kpi-value skeleton" id="kpi-open" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Awaiting quotes</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Quotations Received</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div><div class="kpi-value skeleton" id="kpi-quotes" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Total submitted</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Pending Approvals</span><div class="kpi-icon red"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value skeleton" id="kpi-pending" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">With manager</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Approved</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div><div class="kpi-value skeleton" id="kpi-approved" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Total approved</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Purchase Orders</span><div class="kpi-icon ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div></div><div class="kpi-value skeleton" id="kpi-po" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Generated</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Invoices</span><div class="kpi-icon purple"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div></div><div class="kpi-value skeleton" id="kpi-inv" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Generated</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Procurement Spend</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="kpi-value skeleton" id="kpi-spend" style="height:28px;width:60px;border-radius:6px"></div><div class="kpi-footer">Total PO value</div></div>
+      </div>
+
+      <div class="two-col section-gap">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Monthly Trend</div><div class="card-subtitle">RFQs & Spend last 12 months</div></div>
+          <div class="card-body"><div class="chart-wrap"><canvas id="trendChart" style="height:200px"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Smart Insights</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadInsights()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+          </div>
+          <div class="card-body"><div class="insights-list" id="insightsList">
+            <div class="skeleton" style="height:56px;border-radius:10px;margin-bottom:10px"></div>
+            <div class="skeleton" style="height:56px;border-radius:10px;margin-bottom:10px"></div>
+            <div class="skeleton" style="height:56px;border-radius:10px"></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Quick Actions</div></div>
+        <div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+          <a href="rfqs.html" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="width:40px;height:40px;background:var(--accent-l);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" width="18" height="18"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+            <span style="font-size:13px;font-weight:600;color:var(--ink)">Create RFQ</span>
+          </a>
+          <a href="quotations.html" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;transition:all .2s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="width:40px;height:40px;background:var(--green-l);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" width="18" height="18"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <span style="font-size:13px;font-weight:600;color:var(--ink)">Compare Quotes</span>
+          </a>
+          <a href="purchase-orders.html" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;transition:all .2s" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="width:40px;height:40px;background:var(--orange-l);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" width="18" height="18"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
+            <span style="font-size:13px;font-weight:600;color:var(--ink)">Purchase Orders</span>
+          </a>
+          <a href="invoices.html" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center;transition:all .2s" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="width:40px;height:40px;background:var(--purple-l);border-radius:10px;display:flex;align-items:center;justify-content:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" width="18" height="18"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+            <span style="font-size:13px;font-weight:600;color:var(--ink)">Invoices</span>
+          </a>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="/procurement/procurement.js"></script>
+<script>
+fetch('/procurement/sidebar.html').then(r=>r.text()).then(h=>{document.getElementById('sidebarMount').innerHTML=h;initProcurementPage('dashboard');loadDashboard();});
+async function loadDashboard(){ await Promise.all([loadStats(),loadInsights(),loadTrend()]); }
+async function loadStats(){
+  try{
+    const d=await apiGet('/dashboard/stats'); if(!d.success)return;
+    const s=d.data;
+    ['active','open','quotes','pending','approved','po','inv','spend'].forEach(k=>{ const el=document.getElementById('kpi-'+k); if(el)el.className='kpi-value'; });
+    document.getElementById('kpi-active').textContent=s.active_rfqs;
+    document.getElementById('kpi-open').textContent=s.open_rfqs;
+    document.getElementById('kpi-quotes').textContent=s.received_quotations;
+    document.getElementById('kpi-pending').textContent=s.pending_approvals;
+    document.getElementById('kpi-approved').textContent=s.approved_requests;
+    document.getElementById('kpi-po').textContent=s.purchase_orders;
+    document.getElementById('kpi-inv').textContent=s.invoices;
+    document.getElementById('kpi-spend').textContent=formatCurrency(s.procurement_spend);
+  }catch(e){}
+}
+async function loadInsights(){
+  try{
+    const d=await apiGet('/dashboard/insights'); if(!d.success)return;
+    const ICONS={warning:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',error:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',success:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',info:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'};
+    document.getElementById('insightsList').innerHTML=d.insights.map(i=>`
+      <div class="insight-item"><div class="insight-icon ${i.type}"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ICONS[i.type]||ICONS.info}</svg></div>
+      <span class="insight-text">${i.text}</span></div>`).join('');
+  }catch(e){}
+}
+async function loadTrend(){
+  try{
+    const d=await apiGet('/dashboard/monthly-trend'); if(!d.success||!d.data.length)return;
+    const labels=d.data.map(r=>r.label);
+    const rfqs=d.data.map(r=>parseInt(r.rfqs));
+    const spend=d.data.map(r=>parseFloat(r.spend));
+    drawLineChart('trendChart',labels,[{data:rfqs,color:'#2563eb',label:'RFQs'},{data:spend,color:'#16a34a',label:'Spend'}]);
+  }catch(e){}
+}
+</script>
+</body></html>
