@@ -536,16 +536,6 @@ function renderAIInsights(data) {
   
   content.innerHTML = html;
 }
-  const res = await fetch(API + endpoint, {
-    headers: { 'Authorization': 'Bearer ' + token },
-    credentials: 'include',
-  });
-  const blob = await res.blob();
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-}
 
 /* ── Init page (call on every admin page) ─────────────── */
 function initAdminPage(activeNav) {

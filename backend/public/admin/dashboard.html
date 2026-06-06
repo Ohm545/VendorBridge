@@ -117,142 +117,191 @@
 
 <script src="/admin/admin.js"></script>
 <script>
-// Wait for admin.js to load and DOM to be ready
-document.addEventListener('DOMContentLoaded', function() {
-  // Wait for admin.js functions to be available
-  function waitForAdminJS() {
-    if (typeof initAdminPage === 'function' && typeof apiGet === 'function') {
-      initializeDashboard();
-    } else {
-      setTimeout(waitForAdminJS, 50);
-    }
+// Simple, working initialization without async/await issues
+function initializePage() {
+  // Check if admin functions are loaded
+  if (typeof initAdminPage !== 'function' || typeof apiGet !== 'function') {
+    setTimeout(initializePage, 100);
+    return;
   }
   
-  waitForAdminJS();
-});
-
-// Initialize dashboard after admin.js is loaded
-function initializeDashboard() {
+  // Load sidebar first
   fetch('/admin/sidebar.html')
-    .then(response => response.text())
-    .then(html => {
+    .then(function(response) { return response.text(); })
+    .then(function(html) {
       document.getElementById('sidebarMount').innerHTML = html;
       initAdminPage('dashboard');
-      loadDashboard();
+      loadAllDashboardData();
     })
-    .catch(error => {
-      console.error('Failed to initialize dashboard:', error);
+    .catch(function(error) {
+      console.error('Failed to load sidebar:', error);
     });
 }
 
-function loadDashboard() {
-  Promise.all([loadStats(), loadInsights(), loadMonthlyTrend(), loadFunnel(), loadTopVendors()])
-    .catch(console.error);
+function loadAllDashboardData() {
+  loadStats();
+  loadInsights();
+  loadMonthlyTrend();
+  loadFunnel();
+  loadTopVendors();
 }
 
 function loadStats() {
-  return apiGet('/dashboard/stats')
-    .then(d => {
+  apiGet('/dashboard/stats')
+    .then(function(d) {
       if (!d.success) return;
-      const s = d.data;
-      document.getElementById('kpi-users').className = 'kpi-value';
-      document.getElementById('kpi-vendors').className = 'kpi-value';
-      document.getElementById('kpi-rfqs').className = 'kpi-value';
-      document.getElementById('kpi-approvals').className = 'kpi-value';
-      document.getElementById('kpi-po').className = 'kpi-value';
-      document.getElementById('kpi-invoices').className = 'kpi-value';
-      document.getElementById('kpi-spend').className = 'kpi-value';
-      document.getElementById('kpi-response').className = 'kpi-value';
-      document.getElementById('kpi-users').textContent = s.total_users || '0';
-      document.getElementById('kpi-vendors').textContent = s.total_vendors || '0';
-      document.getElementById('kpi-rfqs').textContent = s.active_rfqs || '0';
-      document.getElementById('kpi-approvals').textContent = s.pending_approvals || '0';
-      document.getElementById('kpi-po').textContent = s.purchase_orders || '0';
-      document.getElementById('kpi-invoices').textContent = s.invoices || '0';
-      document.getElementById('kpi-spend').textContent = formatCurrency(s.total_procurement_value || 0);
-      document.getElementById('kpi-response').textContent = (s.vendor_response_rate || 0) + '%';
+      var s = d.data;
+      
+      // Update KPI elements
+      var elements = {
+        'kpi-users': s.total_users || '0',
+        'kpi-vendors': s.total_vendors || '0',
+        'kpi-rfqs': s.active_rfqs || '0',
+        'kpi-approvals': s.pending_approvals || '0',
+        'kpi-po': s.purchase_orders || '0',
+        'kpi-invoices': s.invoices || '0',
+        'kpi-spend': formatCurrency(s.total_procurement_value || 0),
+        'kpi-response': (s.vendor_response_rate || 0) + '%'
+      };
+      
+      for (var id in elements) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.className = 'kpi-value';
+          el.textContent = elements[id];
+        }
+      }
     })
-    .catch(e => console.error('Load stats error:', e));
+    .catch(function(e) { console.error('Stats error:', e); });
 }
 
 function loadInsights() {
-  return apiGet('/dashboard/insights')
-    .then(d => {
-      if (!d.success) return;
-      const list = document.getElementById('insightsList');
-      list.innerHTML = (d.insights || []).map(i => `
-        <div class="insight-item">
-          <div class="insight-icon ${i.type || 'info'}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              ${i.type==='warning'?'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>':
-               i.type==='error'?'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>':
-               i.type==='success'?'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>':
-               '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'}
-            </svg>
-          </div>
-          <span class="insight-text">${i.text || 'No insight available'}</span>
-        </div>`).join('');
+  apiGet('/dashboard/insights')
+    .then(function(d) {
+      if (!d.success || !d.insights) return;
+      
+      var list = document.getElementById('insightsList');
+      if (!list) return;
+      
+      var html = '';
+      for (var i = 0; i < d.insights.length; i++) {
+        var insight = d.insights[i];
+        var iconSvg = '';
+        
+        if (insight.type === 'warning') {
+          iconSvg = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+        } else if (insight.type === 'error') {
+          iconSvg = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+        } else if (insight.type === 'success') {
+          iconSvg = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+        } else {
+          iconSvg = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>';
+        }
+        
+        html += '<div class="insight-item">';
+        html += '<div class="insight-icon ' + (insight.type || 'info') + '">';
+        html += '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + iconSvg + '</svg>';
+        html += '</div>';
+        html += '<span class="insight-text">' + (insight.text || 'No insight available') + '</span>';
+        html += '</div>';
+      }
+      
+      list.innerHTML = html;
     })
-    .catch(e => console.error('Load insights error:', e));
+    .catch(function(e) { console.error('Insights error:', e); });
 }
 
 function loadMonthlyTrend() {
-  return apiGet('/dashboard/monthly-trend')
-    .then(d => {
+  apiGet('/dashboard/monthly-trend')
+    .then(function(d) {
       if (!d.success || !d.data || !d.data.length) return;
-      const labels = d.data.map(r => r.label ? r.label.split(' ')[0] : 'Unknown');
-      const spend = d.data.map(r => parseFloat(r.spend) || 0);
-      const pos = d.data.map(r => parseInt(r.pos) || 0);
+      
+      var labels = [];
+      var spend = [];
+      var pos = [];
+      
+      for (var i = 0; i < d.data.length; i++) {
+        var row = d.data[i];
+        labels.push(row.label ? row.label.split(' ')[0] : 'Unknown');
+        spend.push(parseFloat(row.spend) || 0);
+        pos.push(parseInt(row.pos) || 0);
+      }
       
       if (typeof drawLineChart === 'function') {
         drawLineChart('trendChart', labels, [
           { data: spend, color: '#2563eb', label: 'Spend' },
-          { data: pos, color: '#16a34a', label: 'POs' },
+          { data: pos, color: '#16a34a', label: 'POs' }
         ]);
       }
     })
-    .catch(e => console.error('Load monthly trend error:', e));
+    .catch(function(e) { console.error('Monthly trend error:', e); });
 }
 
 function loadFunnel() {
-  return apiGet('/analytics/rfq-funnel')
-    .then(d => {
-      if (!d.success) return;
-      const el = document.getElementById('funnelList');
-      el.innerHTML = (d.funnel || []).map(f => `
-        <div class="funnel-item">
-          <span class="funnel-label">${f.stage || 'Unknown Stage'}</span>
-          <div class="funnel-bar-wrap">
-            <div class="funnel-bar" style="width:${f.pct || 0}%"><span>${f.pct || 0}%</span></div>
-          </div>
-          <span class="funnel-count">${f.count || 0}</span>
-        </div>`).join('');
+  apiGet('/analytics/rfq-funnel')
+    .then(function(d) {
+      if (!d.success || !d.funnel) return;
+      
+      var el = document.getElementById('funnelList');
+      if (!el) return;
+      
+      var html = '';
+      for (var i = 0; i < d.funnel.length; i++) {
+        var f = d.funnel[i];
+        html += '<div class="funnel-item">';
+        html += '<span class="funnel-label">' + (f.stage || 'Unknown Stage') + '</span>';
+        html += '<div class="funnel-bar-wrap">';
+        html += '<div class="funnel-bar" style="width:' + (f.pct || 0) + '%"><span>' + (f.pct || 0) + '%</span></div>';
+        html += '</div>';
+        html += '<span class="funnel-count">' + (f.count || 0) + '</span>';
+        html += '</div>';
+      }
+      
+      el.innerHTML = html;
     })
-    .catch(e => console.error('Load funnel error:', e));
+    .catch(function(e) { console.error('Funnel error:', e); });
 }
 
 function loadTopVendors() {
-  return apiGet('/analytics/vendors')
-    .then(d => {
+  apiGet('/analytics/vendors')
+    .then(function(d) {
       if (!d.success) return;
-      const el = document.getElementById('topVendorsList');
-      if (!d.vendors || !d.vendors.length) { 
-        el.innerHTML = '<div class="empty-state" style="padding:20px"><p>No vendor data yet</p></div>'; 
-        return; 
+      
+      var el = document.getElementById('topVendorsList');
+      if (!el) return;
+      
+      if (!d.vendors || !d.vendors.length) {
+        el.innerHTML = '<div class="empty-state" style="padding:20px"><p>No vendor data yet</p></div>';
+        return;
       }
-      el.innerHTML = d.vendors.slice(0,5).map((v,i) => `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-2)">
-          <span style="font-size:12px;font-weight:700;color:var(--muted);width:18px">#${i+1}</span>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.vendor_name || 'Unknown Vendor'}</div>
-            <div style="font-size:11.5px;color:var(--muted)">${v.quotations || 0} quotations · ${v.response_rate || 0}% response</div>
-          </div>
-          <div class="progress-track" style="width:80px">
-            <div class="progress-fill" style="width:${v.response_rate || 0}%"></div>
-          </div>
-        </div>`).join('');
+      
+      var html = '';
+      var vendors = d.vendors.slice(0, 5);
+      
+      for (var i = 0; i < vendors.length; i++) {
+        var v = vendors[i];
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-2)">';
+        html += '<span style="font-size:12px;font-weight:700;color:var(--muted);width:18px">#' + (i + 1) + '</span>';
+        html += '<div style="flex:1;min-width:0">';
+        html += '<div style="font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (v.vendor_name || 'Unknown Vendor') + '</div>';
+        html += '<div style="font-size:11.5px;color:var(--muted)">' + (v.quotations || 0) + ' quotations · ' + (v.response_rate || 0) + '% response</div>';
+        html += '</div>';
+        html += '<div class="progress-track" style="width:80px">';
+        html += '<div class="progress-fill" style="width:' + (v.response_rate || 0) + '%"></div>';
+        html += '</div>';
+        html += '</div>';
+      }
+      
+      el.innerHTML = html;
     })
-    .catch(e => console.error('Load top vendors error:', e));
+    .catch(function(e) { console.error('Top vendors error:', e); });
+}
+
+// Start initialization when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializePage);
+} else {
+  initializePage();
 }
 </script>
 </body>

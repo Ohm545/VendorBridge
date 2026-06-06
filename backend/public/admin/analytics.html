@@ -130,21 +130,33 @@
 
 <script src="/admin/admin.js"></script>
 <script>
-// Initialize analytics page
-async function initializeAnalytics() {
-  try {
-    const response = await fetch('/admin/sidebar.html');
-    const html = await response.text();
-    document.getElementById('sidebarMount').innerHTML = html;
-    initAdminPage('analytics');
-    await loadOverview();
-  } catch (error) {
-    console.error('Failed to initialize analytics:', error);
+// Simple, working initialization without async/await issues
+function initializePage() {
+  // Check if admin functions are loaded
+  if (typeof initAdminPage !== 'function' || typeof apiGet !== 'function') {
+    setTimeout(initializePage, 100);
+    return;
   }
+  
+  // Load sidebar first
+  fetch('/admin/sidebar.html')
+    .then(function(response) { return response.text(); })
+    .then(function(html) {
+      document.getElementById('sidebarMount').innerHTML = html;
+      initAdminPage('analytics');
+      loadOverview();
+    })
+    .catch(function(error) {
+      console.error('Failed to initialize analytics:', error);
+    });
 }
 
-// Call initialization when page loads
-initializeAnalytics();
+// Start initialization when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializePage);
+} else {
+  initializePage();
+}
 
 function switchTab(name, el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -163,13 +175,16 @@ function switchTab(name, el){
   }
 }
 
-async function loadOverview(){
-  try{
-    const [ov, funnel, appr] = await Promise.all([
-      apiGet('/analytics/overview'),
-      apiGet('/analytics/rfq-funnel'),
-      apiGet('/analytics/approvals'),
-    ]);
+function loadOverview(){
+  Promise.all([
+    apiGet('/analytics/overview'),
+    apiGet('/analytics/rfq-funnel'),
+    apiGet('/analytics/approvals'),
+  ]).then(function(responses) {
+    var ov = responses[0];
+    var funnel = responses[1];
+    var appr = responses[2];
+    
     if(ov.success){
       const d=ov.data;
       document.getElementById('overviewKpis').innerHTML=`
@@ -198,90 +213,95 @@ async function loadOverview(){
         <div class="progress-track" style="margin-bottom:6px"><div class="progress-fill" style="width:${Math.round((s.approved/Math.max(parseInt(s.approved)+parseInt(s.rejected),1))*100)}%;background:var(--green)"></div></div>
         <div style="font-size:12px;color:var(--muted)">Approval rate: ${Math.round((s.approved/Math.max(parseInt(s.approved)+parseInt(s.rejected),1))*100)}%</div>`;
     }
-  }catch(e){console.error(e);}
+  }).catch(function(e){
+    console.error('Error loading overview:', e);
+  });
 }
 
-async function loadSpend(){
+function loadSpend(){
   const period=document.getElementById('spendPeriod').value;
-  try{
-    const d=await apiGet('/analytics/spend?period='+period);
-    if(!d.success)return;
-    const labels=d.data.trend.map(r=>new Date(r.period).toLocaleDateString('en-IN',{month:'short',year:'2-digit'}));
-    const vals=d.data.trend.map(r=>parseFloat(r.spend));
-    drawBarChart('spendChart',labels,[{data:vals,color:'#2563eb'}]);
+  apiGet('/analytics/spend?period='+period)
+    .then(function(d) {
+      if(!d.success)return;
+      const labels=d.data.trend.map(r=>new Date(r.period).toLocaleDateString('en-IN',{month:'short',year:'2-digit'}));
+      const vals=d.data.trend.map(r=>parseFloat(r.spend));
+      drawBarChart('spendChart',labels,[{data:vals,color:'#2563eb'}]);
 
-    const catEl=document.getElementById('spendByCategory');
-    const maxCat=Math.max(...d.data.by_category.map(c=>parseFloat(c.spend)),1);
-    catEl.innerHTML=d.data.by_category.map(c=>`
-      <div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
-          <span style="font-weight:600;color:var(--ink)">${c.category||'Uncategorized'}</span>
-          <span style="color:var(--mid)">${formatCurrency(c.spend)}</span>
-        </div>
-        <div class="progress-track"><div class="progress-fill" style="width:${Math.round((c.spend/maxCat)*100)}%"></div></div>
-      </div>`).join('') || '<div class="empty-state" style="padding:20px"><p>No data</p></div>';
+      const catEl=document.getElementById('spendByCategory');
+      const maxCat=Math.max(...d.data.by_category.map(c=>parseFloat(c.spend)),1);
+      catEl.innerHTML=d.data.by_category.map(c=>`
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+            <span style="font-weight:600;color:var(--ink)">${c.category||'Uncategorized'}</span>
+            <span style="color:var(--mid)">${formatCurrency(c.spend)}</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:${Math.round((c.spend/maxCat)*100)}%"></div></div>
+        </div>`).join('') || '<div class="empty-state" style="padding:20px"><p>No data</p></div>';
 
-    const vendEl=document.getElementById('spendByVendor');
-    const maxV=Math.max(...d.data.by_vendor.map(v=>parseFloat(v.spend)),1);
-    vendEl.innerHTML=d.data.by_vendor.map(v=>`
-      <div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
-          <span style="font-weight:600;color:var(--ink)">${v.vendor_name}</span>
-          <span style="color:var(--mid)">${formatCurrency(v.spend)}</span>
-        </div>
-        <div class="progress-track"><div class="progress-fill" style="width:${Math.round((v.spend/maxV)*100)}%;background:var(--green)"></div></div>
-      </div>`).join('') || '<div class="empty-state" style="padding:20px"><p>No data</p></div>';
-  }catch(e){console.error(e);}
+      const vendEl=document.getElementById('spendByVendor');
+      const maxV=Math.max(...d.data.by_vendor.map(v=>parseFloat(v.spend)),1);
+      vendEl.innerHTML=d.data.by_vendor.map(v=>`
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+            <span style="font-weight:600;color:var(--ink)">${v.vendor_name}</span>
+            <span style="color:var(--mid)">${formatCurrency(v.spend)}</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:${Math.round((v.spend/maxV)*100)}%;background:var(--green)"></div></div>
+        </div>`).join('') || '<div class="empty-state" style="padding:20px"><p>No data</p></div>';
+    })
+    .catch(function(e){console.error('Load spend error:', e);});
 }
 
-async function loadVendorAnalytics(){
-  try{
-    const d=await apiGet('/analytics/vendors');
-    if(!d.success)return;
-    const tbody=document.getElementById('vendorRankBody');
-    if(!d.vendors.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><p>No vendor data</p></div></td></tr>';return;}
-    tbody.innerHTML=d.vendors.map((v,i)=>`
-      <tr>
-        <td style="font-weight:700;color:var(--muted)">#${i+1}</td>
-        <td><div class="td-name">${v.vendor_name}</div></td>
-        <td>${v.category?`<span class="badge badge-info">${v.category}</span>`:'—'}</td>
-        <td style="font-weight:600">${v.assigned_rfqs}</td>
-        <td style="font-weight:600">${v.quotations}</td>
-        <td><div style="display:flex;align-items:center;gap:8px">
-          <div class="progress-track" style="width:60px"><div class="progress-fill" style="width:${v.response_rate}%"></div></div>
-          <span style="font-size:12px;font-weight:600">${v.response_rate}%</span>
-        </div></td>
-        <td><div style="display:flex;align-items:center;gap:8px">
-          <div class="progress-track" style="width:60px"><div class="progress-fill" style="width:${v.approval_rate}%;background:var(--green)"></div></div>
-          <span style="font-size:12px;font-weight:600">${v.approval_rate}%</span>
-        </div></td>
-      </tr>`).join('');
-  }catch(e){console.error(e);}
+function loadVendorAnalytics(){
+  apiGet('/analytics/vendors')
+    .then(function(d) {
+      if(!d.success)return;
+      const tbody=document.getElementById('vendorRankBody');
+      if(!d.vendors.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><p>No vendor data</p></div></td></tr>';return;}
+      tbody.innerHTML=d.vendors.map((v,i)=>`
+        <tr>
+          <td style="font-weight:700;color:var(--muted)">#${i+1}</td>
+          <td><div class="td-name">${v.vendor_name}</div></td>
+          <td>${v.category?`<span class="badge badge-info">${v.category}</span>`:'—'}</td>
+          <td style="font-weight:600">${v.assigned_rfqs}</td>
+          <td style="font-weight:600">${v.quotations}</td>
+          <td><div style="display:flex;align-items:center;gap:8px">
+            <div class="progress-track" style="width:60px"><div class="progress-fill" style="width:${v.response_rate}%"></div></div>
+            <span style="font-size:12px;font-weight:600">${v.response_rate}%</span>
+          </div></td>
+          <td><div style="display:flex;align-items:center;gap:8px">
+            <div class="progress-track" style="width:60px"><div class="progress-fill" style="width:${v.approval_rate}%;background:var(--green)"></div></div>
+            <span style="font-size:12px;font-weight:600">${v.approval_rate}%</span>
+          </div></td>
+        </tr>`).join('');
+    })
+    .catch(function(e){console.error('Load vendor analytics error:', e);});
 }
 
-async function loadApprovalAnalytics(){
-  try{
-    const d=await apiGet('/analytics/approvals');
-    if(!d.success)return;
-    const s=d.data.stats;
-    document.getElementById('approvalKpis').innerHTML=`
-      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Pending</span><div class="kpi-icon orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value">${s.pending||0}</div></div>
-      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Approved</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div><div class="kpi-value">${s.approved||0}</div></div>
-      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Rejected</span><div class="kpi-icon red"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div></div><div class="kpi-value">${s.rejected||0}</div></div>
-      <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Avg Time</span><div class="kpi-icon blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value">${s.avg_hours||0}h</div></div>`;
+function loadApprovalAnalytics(){
+  apiGet('/analytics/approvals')
+    .then(function(d) {
+      if(!d.success)return;
+      const s=d.data.stats;
+      document.getElementById('approvalKpis').innerHTML=`
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Pending</span><div class="kpi-icon orange"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value">${s.pending||0}</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Approved</span><div class="kpi-icon green"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div><div class="kpi-value">${s.approved||0}</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Rejected</span><div class="kpi-icon red"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div></div><div class="kpi-value">${s.rejected||0}</div></div>
+        <div class="kpi-card"><div class="kpi-card-top"><span class="kpi-label">Avg Time</span><div class="kpi-icon blue"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="kpi-value">${s.avg_hours||0}h</div></div>`;
 
-    const renderApprovers=(el,data)=>{
-      if(!data.length){el.innerHTML='<div class="empty-state" style="padding:20px"><p>No data yet</p></div>';return;}
-      el.innerHTML=data.map((a,i)=>`
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-2)">
-          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">${a.full_name.charAt(0)}</div>
-          <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--ink)">${a.full_name}</div><div style="font-size:11.5px;color:var(--muted)">${a.count} approvals</div></div>
-          <div style="font-size:13px;font-weight:700;color:var(--mid)">${a.avg_hours}h avg</div>
-        </div>`).join('');
-    };
-    renderApprovers(document.getElementById('fastestApprovers'),d.data.fastest);
-    renderApprovers(document.getElementById('slowestApprovers'),d.data.slowest);
-  }catch(e){console.error(e);}
+      const renderApprovers=function(el,data){
+        if(!data.length){el.innerHTML='<div class="empty-state" style="padding:20px"><p>No data yet</p></div>';return;}
+        el.innerHTML=data.map((a,i)=>`
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-2)">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">${a.full_name.charAt(0)}</div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--ink)">${a.full_name}</div><div style="font-size:11.5px;color:var(--muted)">${a.count} approvals</div></div>
+            <div style="font-size:13px;font-weight:700;color:var(--mid)">${a.avg_hours}h avg</div>
+          </div>`).join('');
+      };
+      renderApprovers(document.getElementById('fastestApprovers'),d.data.fastest);
+      renderApprovers(document.getElementById('slowestApprovers'),d.data.slowest);
+    })
+    .catch(function(e){console.error('Load approval analytics error:', e);});
 }
 </script>
 </body>
